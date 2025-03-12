@@ -10,7 +10,7 @@ function Sidebar() {
   return (
     <div className="w-64 border-r border-gray-800 p-4 flex flex-col h-full">
       <Link to="/" className="mb-10 flex justify-center">
-        <img src={cornerLogo} alt="Logo" className="h-16 w-auto" />
+        <img src={cornerLogo} alt="Logo" className="h-20 w-auto" />
       </Link>
 
       <nav className="flex-1">
