@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import loginLogo from './Login.png';
 
 interface LoginProps {
   onLogin: () => void;
@@ -18,7 +19,7 @@ function Login({ onLogin }: LoginProps) {
     <div className="min-h-screen bg-black flex items-center justify-center p-4">
       <div className="max-w-md w-full space-y-8 bg-gray-900 p-10 rounded-2xl shadow-xl">
         <div>
-          <h1 className="text-5xl font-bold text-center text-white mb-3">Connectify</h1>
+          <h1 className="text-5xl font-bold text-center text-white mb-3"><img src={loginLogoLogo} alt="Logo" className="h-16 w-auto" /></h1>
           <p className="text-center text-gray-400 text-lg">Welcome back! Please login to your account.</p>
         </div>
         
