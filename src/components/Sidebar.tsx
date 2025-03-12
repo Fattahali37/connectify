@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Search, UserPlus, PlusSquare, User } from 'lucide-react';
+import cornerLogo from './corner.png';
 
 function Sidebar() {
   const location = useLocation();
@@ -8,7 +9,7 @@ function Sidebar() {
 
   return (
     <div className="w-64 border-r border-gray-800 p-4 flex flex-col h-full">
-      <Link to="/" className="text-2xl font-bold mb-10 text-white">Connectify</Link>
+      <Link to="/" className="text-2xl font-bold mb-10 text-white"><img src={cornerLogo} alt="Logo" className="h-12 w-auto" /></Link>
       
       <nav className="flex-1">
         <Link to="/" 
