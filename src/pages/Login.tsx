@@ -1,14 +1,14 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import loginLogo from "./Login.png";
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import loginLogo from './Login.png';
 
 interface LoginProps {
   onLogin: () => void;
 }
 
 function Login({ onLogin }: LoginProps) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,21 +18,19 @@ function Login({ onLogin }: LoginProps) {
   return (
     <div className="min-h-screen bg-black flex items-center justify-center p-4">
       <div className="max-w-md w-full space-y-8 bg-gray-900 p-10 rounded-2xl shadow-xl">
-        <div>
-          <div className="flex justify-center">
-            <img src={loginLogo} alt="Logo" className="h-16 w-auto" />
+         <div className="flex justify-center mb-4">
+           <img src={loginLogo} alt="Logo" className="h-20 w-auto" />
           </div>
-          <p className="text-center text-gray-400 text-lg">
-            Welcome back! Please login to your account.
-          </p>
-        </div>
+        <h1 className="text-5xl font-bold text-center text-white mb-3">Welcome back!</h1>
+        <p className="text-center text-gray-400 text-lg">Please login to your account.</p>
+      </div>
 
+
+      
+  
         <form className="space-y-8" onSubmit={handleSubmit}>
           <div>
-            <label
-              htmlFor="email"
-              className="block text-base font-medium text-gray-300 mb-2"
-            >
+            <label htmlFor="email" className="block text-base font-medium text-gray-300 mb-2">
               Email
             </label>
             <input
@@ -47,10 +45,7 @@ function Login({ onLogin }: LoginProps) {
           </div>
 
           <div>
-            <label
-              htmlFor="password"
-              className="block text-base font-medium text-gray-300 mb-2"
-            >
+            <label htmlFor="password" className="block text-base font-medium text-gray-300 mb-2">
               Password
             </label>
             <input
@@ -73,11 +68,8 @@ function Login({ onLogin }: LoginProps) {
         </form>
 
         <p className="text-center text-gray-400 text-lg">
-          Don't have an account?{" "}
-          <Link
-            to="/signup"
-            className="text-purple-500 hover:text-purple-400 font-medium transition-colors duration-200"
-          >
+          Don't have an account?{' '}
+          <Link to="/signup" className="text-purple-500 hover:text-purple-400 font-medium transition-colors duration-200">
             Sign up
           </Link>
         </p>
