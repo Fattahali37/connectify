@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import LoginLogo from "./Login.png";
+import loginLogo from "./Login.png";
 
 interface SignupProps {
   onSignup: () => void;
