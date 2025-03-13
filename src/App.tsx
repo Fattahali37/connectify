@@ -8,12 +8,13 @@ import Search from './pages/Search';
 import Requests from './pages/Requests';
 import Profile from './pages/Profile';
 import CreatePost from './pages/CreatePost';
+import Chat from './pages/Chat';
+import ChatRoom from './pages/ChatRoom';
+import UserProfile from './pages/UserProfile';
 
 function App() {
-  // For demo purposes, we'll use local state to manage authentication
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Function to handle login
   const handleLogin = () => {
     setIsAuthenticated(true);
   };
@@ -49,9 +50,12 @@ function App() {
         >
           <Route index element={<Home />} />
           <Route path="search" element={<Search />} />
+          <Route path="chat" element={<Chat />} />
+          <Route path="chat/:id" element={<ChatRoom />} />
           <Route path="requests" element={<Requests />} />
           <Route path="create" element={<CreatePost />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="user/:username" element={<UserProfile />} />
         </Route>
       </Routes>
     </Router>
