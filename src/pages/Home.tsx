@@ -52,7 +52,7 @@ function Home() {
   };
 
   const ShareMenu = ({ postId }: { postId: number }) => (
-    <div className="absolute top-full right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">
+    <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-gray-800 ring-1 ring-black ring-opacity-5 z-50">
       <div className="py-1" role="menu">
         <button
           onClick={() => navigate("/chat")}
@@ -125,16 +125,16 @@ function Home() {
             </div>
             <div className="relative">
               <button
-                className="text-white hover:text-gray-300 transition-colors duration-200"
+                className="text-gray-400 hover:text-white"
                 onClick={() =>
-                  setActiveShareMenu(
-                    activeShareMenu === post.id ? null : post.id
+                  setActiveOptionsMenu(
+                    activeOptionsMenu === post.id ? null : post.id
                   )
                 }
               >
-                <Share2 size={24} />
+                <MoreHorizontal size={20} />
               </button>
-              {activeShareMenu === post.id && <ShareMenu postId={post.id} />}
+              {activeOptionsMenu === post.id && <OptionsMenu post={post} />}
             </div>
           </div>
 
