@@ -8,6 +8,7 @@ import {
   User,
   MessageSquare,
 } from "lucide-react";
+import cornerLogo from "./corner.png";
 
 function Sidebar() {
   const location = useLocation();
