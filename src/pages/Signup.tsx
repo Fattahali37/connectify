@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import LoginLogo from "./Login.png";
 
 interface SignupProps {
   onSignup: () => void;
 }
 
 function Signup({ onSignup }: SignupProps) {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,14 +19,17 @@ function Signup({ onSignup }: SignupProps) {
   return (
     <div className="min-h-screen bg-black flex items-center justify-center p-4">
       <div className="max-w-md w-full space-y-8 bg-gray-900 p-10 rounded-2xl shadow-xl">
-        <div>
-          <h1 className="text-5xl font-bold text-center text-white mb-3">Connectify</h1>
-          <p className="text-center text-gray-400 text-lg">Create your account and start connecting</p>
+        {/* Logo Section */}
+        <div className="flex justify-center mb-6">
+          <img src={loginLogo} alt="Logo" className="h-24 w-auto" />
         </div>
-        
+
         <form className="space-y-8" onSubmit={handleSubmit}>
           <div>
-            <label htmlFor="name" className="block text-base font-medium text-gray-300 mb-2">
+            <label
+              htmlFor="name"
+              className="block text-base font-medium text-gray-300 mb-2"
+            >
               Full Name
             </label>
             <input
@@ -40,7 +44,10 @@ function Signup({ onSignup }: SignupProps) {
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-base font-medium text-gray-300 mb-2">
+            <label
+              htmlFor="email"
+              className="block text-base font-medium text-gray-300 mb-2"
+            >
               Email
             </label>
             <input
@@ -55,7 +62,10 @@ function Signup({ onSignup }: SignupProps) {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-base font-medium text-gray-300 mb-2">
+            <label
+              htmlFor="password"
+              className="block text-base font-medium text-gray-300 mb-2"
+            >
               Password
             </label>
             <input
@@ -78,8 +88,11 @@ function Signup({ onSignup }: SignupProps) {
         </form>
 
         <p className="text-center text-gray-400 text-lg">
-          Already have an account?{' '}
-          <Link to="/login" className="text-purple-500 hover:text-purple-400 font-medium transition-colors duration-200">
+          Already have an account?{" "}
+          <Link
+            to="/login"
+            className="text-purple-500 hover:text-purple-400 font-medium transition-colors duration-200"
+          >
             Sign in
           </Link>
         </p>
