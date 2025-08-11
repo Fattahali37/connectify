@@ -27,6 +27,8 @@ const updateProfileValidation = [
 
 // Routes
 router.get("/profile/:username", optionalAuth, userController.getUserProfile);
+router.get("/:username", userController.getUserByUsername);
+router.get("/:userId/posts", userController.getUserPosts);
 router.put(
   "/profile",
   protect,
@@ -34,10 +36,13 @@ router.put(
   validate,
   userController.updateProfile
 );
+router.delete("/profile", protect, userController.deleteAccount);
+router.post("/profile/picture", protect, userController.uploadProfilePicture);
 router.get("/search", optionalAuth, userController.searchUsers);
 router.post("/follow/:userId", protect, userController.followUser);
 router.delete("/follow/:userId", protect, userController.unfollowUser);
 router.get("/followers", protect, userController.getFollowers);
 router.get("/following", protect, userController.getFollowing);
+router.get("/:userId/follow-status", protect, userController.checkFollowStatus);
 
 module.exports = router;

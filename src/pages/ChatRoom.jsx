@@ -10,6 +10,13 @@ import {
   Trash2,
   Edit,
   Reply,
+  Volume2,
+  VolumeX,
+  Settings,
+  Users,
+  MoreVertical,
+  MessageCircle,
+  X,
 } from "lucide-react";
 import Message from "../components/Message";
 import api from "../services/api";
@@ -30,11 +37,15 @@ function ChatRoom() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [showChatOptions, setShowChatOptions] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const socketInitializedRef = useRef(false);
+  const messageInputRef = useRef(null);
 
   // Scroll to bottom of messages
   const scrollToBottom = () => {
@@ -269,6 +280,39 @@ function ChatRoom() {
     setReplyTo(null);
   };
 
+  // Chat management functions
+  const toggleMute = async () => {
+    try {
+      // This would call an API to mute/unmute the chat
+      setIsMuted(!isMuted);
+      // await api.toggleChatMute(chatId);
+    } catch (error) {
+      console.error("Error toggling mute:", error);
+    }
+  };
+
+  const deleteChat = async () => {
+    try {
+      await api.deleteChat(chatId);
+      navigate("/chat");
+    } catch (error) {
+      console.error("Error deleting chat:", error);
+      alert("Failed to delete chat");
+    }
+  };
+
+  const leaveGroup = async () => {
+    if (chat?.chatType === "group") {
+      try {
+        await api.leaveGroup(chatId);
+        navigate("/chat");
+      } catch (error) {
+        console.error("Error leaving group:", error);
+        alert("Failed to leave group");
+      }
+    }
+  };
+
   // Initialize socket connection and real-time updates
   useEffect(() => {
     console.log("ChatRoom useEffect - user:", user, "chatId:", chatId);
@@ -423,6 +467,18 @@ function ChatRoom() {
     }
   };
 
+  // Close chat options when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showChatOptions && !event.target.closest(".chat-options")) {
+        setShowChatOptions(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showChatOptions]);
+
   if (isLoading) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -451,218 +507,216 @@ function ChatRoom() {
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-gray-900">
+    <div className="flex-1 bg-gray-900 page-content">
       {/* Chat Header */}
-      <div className="bg-gray-800 border-b border-gray-700 px-6 py-4">
+      <div className="bg-gray-800 border-b border-gray-700 px-6 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
             <button
               onClick={() => navigate("/chat")}
-              className="text-gray-400 hover:text-white transition-colors"
+              className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-gray-700 transition-colors"
             >
               <ArrowLeft size={20} />
             </button>
-
+            
             <div className="flex items-center space-x-3">
-              {/* Chat Avatar */}
               <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center">
-                {chat.chatType === "group" ? (
-                  <span className="text-white font-medium text-sm">
-                    {chat.chatName?.charAt(0) || "G"}
-                  </span>
-                ) : chat.participants?.find((p) => p._id !== user._id)
-                    ?.profilePicture ? (
-                  <img
-                    src={
-                      chat.participants.find((p) => p._id !== user._id)
-                        .profilePicture
-                    }
-                    alt=""
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
+                {chat?.chatType === "group" ? (
+                  <Users size={20} className="text-gray-400" />
                 ) : (
                   <span className="text-white font-medium text-sm">
-                    {chat.participants
-                      ?.find((p) => p._id !== user._id)
-                      ?.firstName?.charAt(0) || "U"}
+                    {chat?.participants?.[0]?.firstName?.charAt(0) || "U"}
                   </span>
                 )}
               </div>
-
+              
               <div>
                 <h2 className="text-white font-semibold">
-                  {chat.displayName || "Chat"}
+                  {chat?.chatType === "group" 
+                    ? chat.name 
+                    : `${chat?.participants?.[0]?.firstName} ${chat?.participants?.[0]?.lastName}`
+                  }
                 </h2>
-                {chat.chatType === "group" && (
+                {chat?.chatType === "group" && (
                   <p className="text-gray-400 text-sm">
-                    {chat.memberCount || chat.participants?.length || 0} members
+                    {chat.participants?.length || 0} members
                   </p>
                 )}
               </div>
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
-            <button 
-              onClick={() => {
-                const status = socketService.getConnectionStatus();
-                console.log("Manual socket status check:", status);
-                alert(`Socket Status: ${status.isConnected ? 'Connected' : 'Disconnected'}\nSocket ID: ${status.socketId}\nCurrent Chat: ${status.currentChatId}`);
-              }}
+          {/* Chat Options */}
+          <div className="relative">
+            <button
+              onClick={() => setShowChatOptions(!showChatOptions)}
               className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-gray-700 transition-colors"
-              title="Test Socket Connection"
             >
-              🔌
+              <MoreVertical size={20} />
             </button>
-            <button className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-gray-700 transition-colors">
-              <MoreHorizontal size={20} />
-            </button>
+
+            {/* Chat Options Dropdown */}
+            {showChatOptions && (
+              <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg border border-gray-700 z-50 chat-options">
+                <div className="py-1">
+                  {chat?.chatType === "group" && (
+                    <>
+                      <button
+                        onClick={() => {
+                          setShowChatOptions(false);
+                          // Navigate to group settings
+                        }}
+                        className="w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-700 flex items-center space-x-2"
+                      >
+                        <Settings size={16} />
+                        <span>Group Settings</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowChatOptions(false);
+                          leaveGroup();
+                        }}
+                        className="w-full text-left px-4 py-2 text-red-400 hover:bg-gray-700 flex items-center space-x-2"
+                      >
+                        <Users size={16} />
+                        <span>Leave Group</span>
+                      </button>
+                    </>
+                  )}
+                  <button
+                    onClick={() => {
+                      setShowChatOptions(false);
+                      setShowDeleteConfirm(true);
+                    }}
+                    className="w-full text-left px-4 py-2 text-red-400 hover:bg-gray-700 flex items-center space-x-2"
+                  >
+                    <Trash2 size={16} />
+                    <span>Delete Chat</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
-        {/* Load more messages button */}
-        {hasMore && (
-          <div className="text-center">
-            <button
-              onClick={loadMoreMessages}
-              disabled={isLoadingMore}
-              className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 disabled:opacity-50"
-            >
-              {isLoadingMore ? "Loading..." : "Load More Messages"}
-            </button>
-          </div>
-        )}
-
-        {/* Messages */}
-        {messages.map((message) => (
-          <Message
-            key={message._id}
-            message={message}
-            isOwnMessage={message.sender._id === user._id}
-            onMessageUpdate={(messageId, updates) => {
-              setMessages((prev) =>
-                prev.map((msg) =>
-                  msg._id === messageId ? { ...msg, ...updates } : msg
-                )
-              );
-            }}
-            onMessageDelete={handleMessageDelete}
-            onReply={handleReply}
-            currentUser={user}
-          />
-        ))}
-
-        {/* Typing indicators */}
-        {typingUsers.length > 0 && (
-          <div className="flex items-center space-x-2 text-gray-400 text-sm italic">
-            <div className="flex space-x-1">
-              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-              <div
-                className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                style={{ animationDelay: "0.1s" }}
-              ></div>
-              <div
-                className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                style={{ animationDelay: "0.2s" }}
-              ></div>
+      <div className="chat-messages flex-1 p-4">
+        {isLoading ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
+              <p className="text-gray-400">Loading messages...</p>
             </div>
-            <span>
-              {typingUsers.map((u) => u.userName).join(", ")}{" "}
-              {typingUsers.length === 1 ? "is" : "are"} typing...
-            </span>
+          </div>
+        ) : messages.length === 0 ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <MessageCircle className="text-gray-400 mx-auto mb-4" size={48} />
+              <p className="text-gray-400 text-lg">No messages yet</p>
+              <p className="text-gray-500 text-sm">Start the conversation!</p>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {messages.map((message) => (
+              <Message
+                key={message._id}
+                message={message}
+                isOwn={message.sender?._id === user?._id}
+                onReaction={handleReaction}
+                onReply={handleReply}
+                onDelete={handleMessageDelete}
+              />
+            ))}
           </div>
         )}
-
-        <div ref={messagesEndRef} />
       </div>
 
-      {/* Reply preview */}
-      {replyTo && (
-        <div className="bg-gray-800 border-t border-gray-700 px-6 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <span className="text-gray-400 text-sm">Replying to:</span>
-              <div className="bg-gray-700 rounded-lg px-3 py-2">
-                <p className="text-white text-sm truncate max-w-xs">
-                  {replyTo.content}
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={cancelReply}
-              className="text-gray-400 hover:text-white"
-            >
-              ✕
-            </button>
-          </div>
+      {/* Typing Indicator */}
+      {typingUsers.length > 0 && (
+        <div className="px-6 py-2 bg-gray-800 border-t border-gray-700">
+          <p className="text-gray-400 text-sm italic">
+            {typingUsers.join(", ")} {typingUsers.length === 1 ? "is" : "are"} typing...
+          </p>
         </div>
       )}
 
       {/* Message Input */}
-      <div className="bg-gray-800 border-t border-gray-700 px-6 py-4">
+      <div className="bg-gray-800 border-t border-gray-700 p-4">
         <div className="flex items-end space-x-3">
-          <div className="flex-1">
-            <textarea
-              value={newMessage}
-              onChange={(e) => {
-                setNewMessage(e.target.value);
-                handleTyping();
-              }}
-              onKeyPress={handleKeyPress}
-              placeholder="Type a message..."
-              className="w-full bg-gray-700 text-white placeholder-gray-400 rounded-lg px-4 py-3 resize-none focus:outline-none focus:ring-2 focus:ring-purple-500"
-              rows="1"
-              style={{ minHeight: "48px", maxHeight: "120px" }}
-            />
-          </div>
-
-          <div className="flex items-center space-x-2">
-            {/* File upload */}
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-gray-700 transition-colors"
-              title="Attach file"
-            >
-              <File size={20} />
-            </button>
-
-            {/* Image upload */}
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-gray-700 transition-colors"
-              title="Attach image"
-            >
-              <Image size={20} />
-            </button>
-
-            {/* Emoji picker (placeholder) */}
-            <button className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-gray-700 transition-colors">
-              <Smile size={20} />
-            </button>
-
-            {/* Send button */}
+          {/* Reply Preview */}
+          {replyTo && (
+            <div className="flex-1 bg-gray-700 rounded-lg p-3 mb-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <span className="text-purple-400 text-sm">Replying to:</span>
+                  <span className="text-gray-300 text-sm">{replyTo.content}</span>
+                </div>
+                <button
+                  onClick={() => setReplyTo(null)}
+                  className="text-gray-400 hover:text-white"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+          )}
+          
+          <div className="flex-1 flex items-end space-x-3">
+            <div className="flex-1">
+              <textarea
+                ref={messageInputRef}
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyDown={handleKeyPress}
+                onFocus={handleTyping}
+                onBlur={handleTyping}
+                placeholder="Type a message..."
+                rows={1}
+                className="w-full bg-gray-700 text-white placeholder-gray-400 rounded-lg px-4 py-3 resize-none focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+            </div>
+            
             <button
               onClick={sendMessage}
-              disabled={!newMessage.trim() || isSending}
-              className="bg-purple-600 text-white p-3 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              disabled={!newMessage.trim()}
+              className="bg-purple-600 text-white px-4 py-3 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Send size={20} />
             </button>
           </div>
         </div>
-
-        {/* Hidden file input */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          onChange={handleFileUpload}
-          className="hidden"
-          accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt"
-        />
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
+            <h2 className="text-white text-xl font-semibold mb-4">
+              Delete Chat
+            </h2>
+            <p className="text-gray-300 mb-6">
+              Are you sure you want to delete this chat? This action cannot be
+              undone.
+            </p>
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="flex-1 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={deleteChat}
+                className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

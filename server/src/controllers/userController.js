@@ -1,5 +1,9 @@
 const User = require("../models/User");
 const Post = require("../models/Post");
+const Chat = require("../models/Chat");
+const Message = require("../models/Message");
+const Notification = require("../models/Notification");
+const Request = require("../models/Request");
 
 // @desc    Get user profile by username
 // @route   GET /api/users/profile/:username
@@ -47,6 +51,55 @@ const getUserProfile = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Error fetching user profile",
+      error:
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "Internal server error",
+    });
+  }
+};
+
+// @desc    Get user by username (public endpoint)
+// @route   GET /api/users/:username
+// @access  Public
+const getUserByUsername = async (req, res) => {
+  try {
+    const user = await User.findOne({ username: req.params.username }).select(
+      "-password -refreshToken -email"
+    );
+
+    if (!user || !user.isActive) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Get user's post count
+    const postCount = await Post.countDocuments({
+      user: user._id,
+      isPublic: true,
+      isActive: true,
+    });
+
+    const profileData = {
+      ...user.toObject(),
+      postCount,
+      followersCount: user.followers.length,
+      followingCount: user.following.length,
+    };
+
+    res.json({
+      success: true,
+      data: {
+        user: profileData,
+      },
+    });
+  } catch (error) {
+    console.error("Get user by username error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching user",
       error:
         process.env.NODE_ENV === "development"
           ? error.message
@@ -399,6 +452,206 @@ const getFollowing = async (req, res) => {
   }
 };
 
+// @desc    Check if current user is following another user
+// @route   GET /api/users/:userId/follow-status
+// @access  Private
+const checkFollowStatus = async (req, res) => {
+  try {
+    const userToCheck = await User.findById(req.params.userId);
+
+    if (!userToCheck || !userToCheck.isActive) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const currentUser = await User.findById(req.user._id);
+    const isFollowing = currentUser.following.includes(userToCheck._id);
+
+    res.json({
+      success: true,
+      data: {
+        isFollowing,
+        followersCount: userToCheck.followers.length,
+        followingCount: userToCheck.following.length,
+      },
+    });
+  } catch (error) {
+    console.error("Check follow status error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error checking follow status",
+      error:
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "Internal server error",
+    });
+  }
+};
+
+// @desc    Get posts for a specific user
+// @route   GET /api/users/:userId/posts
+// @access  Public
+const getUserPosts = async (req, res) => {
+  try {
+    const { page = 1, limit = 20 } = req.query;
+    const skip = (page - 1) * limit;
+
+    const user = await User.findById(req.params.userId);
+    if (!user || !user.isActive) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const posts = await Post.find({
+      user: req.params.userId,
+      isPublic: true,
+      isActive: true,
+    })
+      .populate("user", "username firstName lastName profilePicture")
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit))
+      .skip(skip);
+
+    const total = await Post.countDocuments({
+      user: req.params.userId,
+      isPublic: true,
+      isActive: true,
+    });
+
+    res.json({
+      success: true,
+      data: {
+        posts,
+        pagination: {
+          currentPage: parseInt(page),
+          totalPages: Math.ceil(total / limit),
+          totalPosts: total,
+          hasNextPage: page * limit < total,
+          hasPrevPage: page > 1,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Get user posts error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching user posts",
+      error:
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "Internal server error",
+    });
+  }
+};
+
+// @desc    Delete user account
+// @route   DELETE /api/users/profile
+// @access  Private
+const deleteAccount = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Delete user's posts
+    await Post.deleteMany({ user: req.user._id });
+
+    // Delete user's chats and messages
+    await Chat.deleteMany({ participants: req.user._id });
+    await Message.deleteMany({ sender: req.user._id });
+
+    // Delete user's notifications
+    await Notification.deleteMany({ recipient: req.user._id });
+
+    // Delete user's requests
+    await Request.deleteMany({
+      $or: [{ sender: req.user._id }, { recipient: req.user._id }],
+    });
+
+    // Remove user from other users' followers/following lists
+    await User.updateMany(
+      { followers: req.user._id },
+      { $pull: { followers: req.user._id } }
+    );
+    await User.updateMany(
+      { following: req.user._id },
+      { $pull: { following: req.user._id } }
+    );
+    await User.updateMany(
+      { friends: req.user._id },
+      { $pull: { friends: req.user._id } }
+    );
+
+    // Delete the user account
+    await User.findByIdAndDelete(req.user._id);
+
+    res.json({
+      success: true,
+      message: "Account deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete account error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error deleting account",
+      error:
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "Internal server error",
+    });
+  }
+};
+
+// @desc    Upload profile picture
+// @route   POST /api/users/profile/picture
+// @access  Private
+const uploadProfilePicture = async (req, res) => {
+  try {
+    // For now, this is a placeholder. In a real implementation,
+    // you would handle file upload to a service like AWS S3 or Cloudinary
+    const { profilePicture } = req.body;
+
+    if (!profilePicture) {
+      return res.status(400).json({
+        success: false,
+        message: "Profile picture is required",
+      });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      { profilePicture },
+      { new: true, runValidators: true }
+    ).select("-password -refreshToken");
+
+    res.json({
+      success: true,
+      message: "Profile picture updated successfully",
+      data: {
+        user: updatedUser,
+      },
+    });
+  } catch (error) {
+    console.error("Upload profile picture error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error uploading profile picture",
+      error:
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "Internal server error",
+    });
+  }
+};
+
 module.exports = {
   getUserProfile,
   updateProfile,
@@ -407,4 +660,9 @@ module.exports = {
   unfollowUser,
   getFollowers,
   getFollowing,
+  checkFollowStatus,
+  getUserByUsername,
+  getUserPosts,
+  deleteAccount,
+  uploadProfilePicture,
 };

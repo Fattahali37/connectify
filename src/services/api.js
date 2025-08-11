@@ -30,9 +30,14 @@ class ApiService {
 
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
+    const baseHeaders = this.getHeaders();
+    // For FormData, allow browser to set Content-Type but keep Authorization
+    if (options?.body instanceof FormData) {
+      delete baseHeaders["Content-Type"];
+    }
     const config = {
-      headers: this.getHeaders(),
       ...options,
+      headers: { ...baseHeaders, ...(options.headers || {}) },
     };
 
     try {
@@ -82,7 +87,35 @@ class ApiService {
 
   // User endpoints
   async getUserProfile(username) {
-    return this.request(`/users/profile/${username}`);
+    return this.request(`/users/${username}`);
+  }
+
+  async searchUsers(query) {
+    return this.request(`/users/search?q=${encodeURIComponent(query)}`);
+  }
+
+  async followUser(userId) {
+    return this.request(`/users/${userId}/follow`, {
+      method: "POST",
+    });
+  }
+
+  async unfollowUser(userId) {
+    return this.request(`/users/${userId}/follow`, {
+      method: "DELETE",
+    });
+  }
+
+  async getFollowers(userId, page = 1) {
+    return this.request(`/users/${userId}/followers?page=${page}`);
+  }
+
+  async getFollowing(userId, page = 1) {
+    return this.request(`/users/${userId}/following?page=${page}`);
+  }
+
+  async checkFollowStatus(userId) {
+    return this.request(`/users/${userId}/follow-status`);
   }
 
   async updateProfile(profileData) {
@@ -92,55 +125,22 @@ class ApiService {
     });
   }
 
-  async searchUsers(query, page = 1, limit = 10, filter = "all") {
-    const params = new URLSearchParams({
-      q: query,
-      page: page.toString(),
-      limit: limit.toString(),
-      filter: filter,
-    });
-    return this.request(`/users/search?${params}`);
-  }
-
-  async followUser(userId) {
-    return this.request(`/users/follow/${userId}`, {
+  async uploadProfilePicture(formData) {
+    return this.request("/users/profile/picture", {
       method: "POST",
+      body: formData,
     });
   }
 
-  async unfollowUser(userId) {
-    return this.request(`/users/follow/${userId}`, {
+  async deleteAccount() {
+    return this.request("/users/profile", {
       method: "DELETE",
     });
   }
 
-  async getFollowers(page = 1, limit = 20) {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString(),
-    });
-    return this.request(`/users/followers?${params}`);
-  }
-
-  async getFollowing(page = 1, limit = 20) {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString(),
-    });
-    return this.request(`/users/following?${params}`);
-  }
-
   // Post endpoints
-  async getPosts(page = 1, limit = 10) {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString(),
-    });
-    return this.request(`/posts?${params}`);
-  }
-
-  async getPost(postId) {
-    return this.request(`/posts/${postId}`);
+  async getPosts(page = 1, limit = 20) {
+    return this.request(`/posts?page=${page}&limit=${limit}`);
   }
 
   async createPost(postData) {
@@ -150,16 +150,14 @@ class ApiService {
     });
   }
 
-  async toggleLike(postId) {
-    return this.request(`/posts/${postId}/like`, {
-      method: "POST",
-    });
+  async getPost(postId) {
+    return this.request(`/posts/${postId}`);
   }
 
-  async addComment(postId, text) {
-    return this.request(`/posts/${postId}/comment`, {
-      method: "POST",
-      body: JSON.stringify({ text }),
+  async updatePost(postId, postData) {
+    return this.request(`/posts/${postId}`, {
+      method: "PUT",
+      body: JSON.stringify(postData),
     });
   }
 
@@ -169,28 +167,38 @@ class ApiService {
     });
   }
 
-  async getUserPosts(userId, page = 1, limit = 10) {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString(),
+  async likePost(postId) {
+    return this.request(`/posts/${postId}/like`, {
+      method: "POST",
     });
-    return this.request(`/posts/user/${userId}?${params}`);
+  }
+
+  async unlikePost(postId) {
+    return this.request(`/posts/${postId}/like`, {
+      method: "DELETE",
+    });
+  }
+
+  async addComment(postId, commentData) {
+    return this.request(`/posts/${postId}/comments`, {
+      method: "POST",
+      body: JSON.stringify(commentData),
+    });
+  }
+
+  async deleteComment(postId, commentId) {
+    return this.request(`/posts/${postId}/comments/${commentId}`, {
+      method: "DELETE",
+    });
+  }
+
+  async getUserPosts(userId, page = 1) {
+    return this.request(`/users/${userId}/posts?page=${page}`);
   }
 
   // Chat endpoints
-  async getUserChats(page = 1, limit = 20) {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString(),
-    });
-    return this.request(`/chat?${params}`);
-  }
-
-  async getOrCreateDirectChat(userId) {
-    return this.request("/chat/direct", {
-      method: "POST",
-      body: JSON.stringify({ userId }),
-    });
+  async getUserChats(page = 1) {
+    return this.request(`/chat?page=${page}`);
   }
 
   async createGroupChat(groupData) {
@@ -200,12 +208,31 @@ class ApiService {
     });
   }
 
-  async getChatMessages(chatId, page = 1, limit = 50) {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString(),
+  async getChatById(chatId) {
+    return this.request(`/chat/${chatId}`);
+  }
+
+  async deleteChat(chatId) {
+    return this.request(`/chat/${chatId}`, {
+      method: "DELETE",
     });
-    return this.request(`/chat/${chatId}/messages?${params}`);
+  }
+
+  async leaveGroup(chatId) {
+    return this.request(`/chat/${chatId}/leave`, {
+      method: "POST",
+    });
+  }
+
+  async getOrCreateDirectChat(userId) {
+    return this.request("/chat/direct", {
+      method: "POST",
+      body: JSON.stringify({ userId }),
+    });
+  }
+
+  async getChatMessages(chatId, page = 1, limit = 50) {
+    return this.request(`/chat/${chatId}/messages?page=${page}&limit=${limit}`);
   }
 
   async sendMessage(chatId, messageData) {
@@ -230,7 +257,7 @@ class ApiService {
 
   async markChatAsRead(chatId) {
     return this.request(`/chat/${chatId}/read`, {
-      method: "POST",
+      method: "PUT",
     });
   }
 
@@ -250,45 +277,192 @@ class ApiService {
     return this.request(`/chat/${chatId}/typing`);
   }
 
+  async updateGroupChat(chatId, groupData) {
+    return this.request(`/chat/${chatId}`, {
+      method: "PUT",
+      body: JSON.stringify(groupData),
+    });
+  }
+
+  async addGroupMember(chatId, userId) {
+    return this.request(`/chat/${chatId}/members`, {
+      method: "POST",
+      body: JSON.stringify({ userId }),
+    });
+  }
+
+  async removeGroupMember(chatId, userId) {
+    return this.request(`/chat/${chatId}/members/${userId}`, {
+      method: "DELETE",
+    });
+  }
+
+  async getGroupMembers(chatId) {
+    return this.request(`/chat/${chatId}/members`);
+  }
+
+  // Request endpoints
+  async getFollowRequests(page = 1, limit = 20) {
+    return this.request(`/requests/follow?page=${page}&limit=${limit}`);
+  }
+
+  async acceptFollowRequest(requestId) {
+    return this.request(`/requests/follow/${requestId}/accept`, {
+      method: "PUT",
+    });
+  }
+
+  async rejectFollowRequest(requestId) {
+    return this.request(`/requests/follow/${requestId}/reject`, {
+      method: "PUT",
+    });
+  }
+
+  async sendFollowRequest(userId) {
+    return this.request(`/requests/follow`, {
+      method: "POST",
+      body: JSON.stringify({ userId }),
+    });
+  }
+
+  async cancelFollowRequest(userId) {
+    return this.request(`/requests/follow/${userId}`, {
+      method: "DELETE",
+    });
+  }
+
+  // Friend request endpoints
+  async getFriendRequests(page = 1, limit = 20) {
+    return this.request(`/requests/friend?page=${page}&limit=${limit}`);
+  }
+
+  async sendFriendRequest(userId, message = "") {
+    return this.request("/requests/friend", {
+      method: "POST",
+      body: JSON.stringify({ userId, message }),
+    });
+  }
+
+  async acceptFriendRequest(requestId) {
+    return this.request(`/requests/friend/${requestId}/accept`, {
+      method: "PUT",
+    });
+  }
+
+  async rejectFriendRequest(requestId) {
+    return this.request(`/requests/friend/${requestId}/reject`, {
+      method: "PUT",
+    });
+  }
+
+  async cancelFriendRequest(userId) {
+    return this.request(`/requests/friend/${userId}`, {
+      method: "DELETE",
+    });
+  }
+
+  // Group invite endpoints
+  async getGroupInvites(page = 1, limit = 20) {
+    return this.request(`/requests/group?page=${page}&limit=${limit}`);
+  }
+
+  async sendGroupInvite(chatId, userId, message = "") {
+    return this.request("/requests/group", {
+      method: "POST",
+      body: JSON.stringify({ chatId, userId, message }),
+    });
+  }
+
+  async acceptGroupInvite(requestId) {
+    return this.request(`/requests/group/${requestId}/accept`, {
+      method: "PUT",
+    });
+  }
+
+  async rejectGroupInvite(requestId) {
+    return this.request(`/requests/group/${requestId}/reject`, {
+      method: "PUT",
+    });
+  }
+
+  async cancelGroupInvite(requestId) {
+    return this.request(`/requests/group/${requestId}`, {
+      method: "DELETE",
+    });
+  }
+
+  // File upload endpoints
+  async uploadFile(file, type = "image") {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("type", type);
+
+    return this.request("/upload", {
+      method: "POST",
+      body: formData,
+    });
+  }
+
+  async uploadImage(imageFile) {
+    return this.uploadFile(imageFile, "image");
+  }
+
+  async uploadDocument(documentFile) {
+    return this.uploadFile(documentFile, "document");
+  }
+
+  // Search and discovery endpoints
+  async searchPosts(query, page = 1) {
+    return this.request(
+      `/posts/search?q=${encodeURIComponent(query)}&page=${page}`
+    );
+  }
+
+  async getTrendingPosts() {
+    return this.request("/posts/trending");
+  }
+
+  async getRecommendedUsers() {
+    return this.request("/users/recommended");
+  }
+
   // Notification endpoints
   async getNotifications(page = 1, limit = 20) {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString(),
-    });
-    return this.request(`/notifications?${params}`);
+    return this.request(`/notifications?page=${page}&limit=${limit}`);
   }
 
   async markNotificationAsRead(notificationId) {
     return this.request(`/notifications/${notificationId}/read`, {
-      method: "POST",
+      method: "PUT",
     });
   }
 
   async markAllNotificationsAsRead() {
     return this.request("/notifications/read-all", {
+      method: "PUT",
+    });
+  }
+
+  async deleteNotification(notificationId) {
+    return this.request(`/notifications/${notificationId}`, {
+      method: "DELETE",
+    });
+  }
+
+  // Utility endpoints
+  async getCurrentUser() {
+    return this.request("/auth/me");
+  }
+
+  async refreshToken() {
+    return this.request("/auth/refresh", {
       method: "POST",
     });
   }
 
-  // File upload helper (for future implementation)
-  async uploadFile(file, onProgress) {
-    // This is a placeholder for file upload implementation
-    // You can integrate with services like:
-    // - AWS S3
-    // - Cloudinary
-    // - Multer for local storage
-
-    return new Promise((resolve, reject) => {
-      // Simulate file upload
-      setTimeout(() => {
-        resolve({
-          url: URL.createObjectURL(file),
-          fileName: file.name,
-          fileSize: file.size,
-          fileType: file.type,
-        });
-      }, 1000);
+  async logout() {
+    return this.request("/auth/logout", {
+      method: "POST",
     });
   }
 }

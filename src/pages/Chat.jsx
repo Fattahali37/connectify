@@ -1,125 +1,123 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { MessageCircle, Search, Plus, Loader2, RefreshCw } from "lucide-react";
-import ChatItem from "../components/ChatItem";
+import { Plus, Search, Users, MessageCircle } from "lucide-react";
 import api from "../services/api";
+import { useAuth } from "../contexts/AuthContext";
 
 function Chat() {
-  const [chats, setChats] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [hasMore, setHasMore] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filteredChats, setFilteredChats] = useState([]);
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [chats, setChats] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [groupForm, setGroupForm] = useState({
+    name: "",
+    description: "",
+    participants: [],
+    isPrivate: false,
+    allowMemberInvites: true,
+  });
+  const [availableUsers, setAvailableUsers] = useState([]);
+  const [isCreatingGroup, setIsCreatingGroup] = useState(false);
 
+  // Load chats
   useEffect(() => {
-    fetchChats();
+    loadChats();
   }, []);
 
+  // Load available users for group creation
   useEffect(() => {
-    // Filter chats based on search query
-    if (searchQuery.trim()) {
-      const filtered = chats.filter(
-        (chat) =>
-          chat.displayName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          chat.lastMessage?.content
-            ?.toLowerCase()
-            .includes(searchQuery.toLowerCase())
-      );
-      setFilteredChats(filtered);
-    } else {
-      setFilteredChats(chats);
+    if (showCreateGroup) {
+      loadAvailableUsers();
     }
-  }, [searchQuery, chats]);
+  }, [showCreateGroup]);
 
-  const fetchChats = async (page = 1, append = false) => {
+  const loadChats = async () => {
     try {
-      setLoading(true);
-      const response = await api.getUserChats(page);
-
-      if (append) {
-        setChats((prev) => [...prev, ...response.data.chats]);
-      } else {
-        setChats(response.data.chats);
-      }
-
-      setCurrentPage(response.data.pagination.currentPage);
-      setHasMore(response.data.pagination.hasNextPage);
+      setIsLoading(true);
+      const response = await api.getUserChats();
+      setChats(response.data.chats);
     } catch (error) {
-      console.error("Error fetching chats:", error);
-      if (error.status === 401) {
-        api.removeToken();
-        navigate("/login");
-      }
+      console.error("Error loading chats:", error);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const refreshChats = async () => {
-    setRefreshing(true);
-    await fetchChats(1, false);
-    setRefreshing(false);
-  };
-
-  const loadMoreChats = async () => {
-    if (hasMore && !loading) {
-      await fetchChats(currentPage + 1, true);
+  const loadAvailableUsers = async () => {
+    try {
+      const response = await api.searchUsers("");
+      setAvailableUsers(response.data.users.filter((u) => u._id !== user._id));
+    } catch (error) {
+      console.error("Error loading users:", error);
     }
   };
 
-  const handleChatClick = (chat) => {
-    navigate(`/chat/${chat._id}`);
+  const handleCreateGroup = async () => {
+    if (!groupForm.name || groupForm.participants.length < 1) {
+      alert("Please provide a group name and select at least one participant");
+      return;
+    }
+
+    try {
+      setIsCreatingGroup(true);
+      const response = await api.createGroupChat(groupForm);
+      setShowCreateGroup(false);
+      setGroupForm({
+        name: "",
+        description: "",
+        participants: [],
+        isPrivate: false,
+        allowMemberInvites: true,
+      });
+      loadChats(); // Refresh chat list
+      navigate(`/chat/${response.data.chat._id}`);
+    } catch (error) {
+      console.error("Error creating group chat:", error);
+      alert("Failed to create group chat");
+    } finally {
+      setIsCreatingGroup(false);
+    }
   };
 
-  const handleNewChat = () => {
-    // Navigate to search page to find users to chat with
-    navigate("/search");
+  const toggleParticipant = (userId) => {
+    setGroupForm((prev) => ({
+      ...prev,
+      participants: prev.participants.includes(userId)
+        ? prev.participants.filter((id) => id !== userId)
+        : [...prev.participants, userId],
+    }));
   };
 
-  if (loading && chats.length === 0) {
-    return (
-      <div className="max-w-4xl mx-auto py-8 px-4">
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="animate-spin text-purple-500" size={48} />
-        </div>
-      </div>
-    );
-  }
+  const filteredChats = chats.filter(
+    (chat) =>
+      chat.displayName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      chat.participants?.some(
+        (p) =>
+          p.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          p.lastName?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+  );
 
   return (
-    <div className="max-w-4xl mx-auto py-8 px-4">
+    <div className="flex-1 bg-gray-900 page-content">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Messages</h1>
-          <p className="text-gray-400">
-            Connect with your friends and followers
-          </p>
-        </div>
-        <div className="flex items-center space-x-3">
+      <div className="bg-gray-800 border-b border-gray-700 px-6 py-4 sticky top-0 z-10">
+        <div className="flex items-center justify-between">
+          <h1 className="text-white text-xl font-semibold">Messages</h1>
           <button
-            onClick={refreshChats}
-            disabled={refreshing}
-            className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors disabled:opacity-50"
-            title="Refresh"
+            onClick={() => setShowCreateGroup(true)}
+            className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2"
           >
-            <RefreshCw size={20} className={refreshing ? "animate-spin" : ""} />
-          </button>
-          <button
-            onClick={handleNewChat}
-            className="flex items-center space-x-2 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-white transition-colors"
-          >
-            <Plus size={20} />
-            <span>New Chat</span>
+            <Plus size={16} />
+            <span>Create Group</span>
           </button>
         </div>
       </div>
 
       {/* Search Bar */}
-      <div className="mb-6">
+      <div className="p-4 border-b border-gray-700">
         <div className="relative">
           <Search
             className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
@@ -127,106 +125,212 @@ function Chat() {
           />
           <input
             type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search conversations..."
-            className="w-full pl-10 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+            placeholder="Search chats..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full bg-gray-700 text-white placeholder-gray-400 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
         </div>
       </div>
 
-      {/* Chat List */}
-      {filteredChats.length === 0 ? (
-        <div className="text-center py-20">
-          <div className="bg-gray-900 rounded-xl p-8">
-            {searchQuery ? (
-              <>
-                <MessageCircle
-                  size={48}
-                  className="text-gray-400 mx-auto mb-4"
-                />
-                <h3 className="text-xl font-semibold mb-2">
-                  No conversations found
-                </h3>
-                <p className="text-gray-400 mb-6">
-                  No conversations match your search for "{searchQuery}"
-                </p>
-                <button
-                  onClick={() => setSearchQuery("")}
-                  className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg text-white transition-colors"
-                >
-                  Clear Search
-                </button>
-              </>
-            ) : (
-              <>
-                <MessageCircle
-                  size={48}
-                  className="text-gray-400 mx-auto mb-4"
-                />
-                <h3 className="text-xl font-semibold mb-2">
-                  No conversations yet
-                </h3>
-                <p className="text-gray-400 mb-6">
-                  Start chatting with your friends and followers to see
-                  conversations here!
-                </p>
-                <button
-                  onClick={handleNewChat}
-                  className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg text-white transition-colors"
-                >
-                  Start a Conversation
-                </button>
-              </>
-            )}
+      {/* Chats List */}
+      <div className="flex-1 overflow-y-auto">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
+              <p className="text-gray-400">Loading chats...</p>
+            </div>
           </div>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {/* Results Header */}
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">
-              {filteredChats.length} conversation
-              {filteredChats.length !== 1 ? "s" : ""}
-            </h2>
-            {searchQuery && (
-              <p className="text-gray-400 text-sm">
-                Filtered by: "{searchQuery}"
-              </p>
-            )}
+        ) : filteredChats.length === 0 ? (
+          <div className="text-center py-12">
+            <MessageCircle className="text-gray-400 mx-auto mb-4" size={48} />
+            <p className="text-gray-400 text-lg">No chats found</p>
+            <p className="text-gray-500 text-sm">
+              {searchTerm
+                ? "Try adjusting your search"
+                : "Start a conversation to get started!"}
+            </p>
           </div>
-
-          {/* Chat Items */}
-          <div className="bg-gray-900 rounded-xl overflow-hidden">
-            {filteredChats.map((chat, index) => (
-              <ChatItem
+        ) : (
+          <div className="p-4 space-y-2">
+            {filteredChats.map((chat) => (
+              <div
                 key={chat._id}
-                chat={chat}
-                isActive={false}
-                onClick={handleChatClick}
-              />
+                className="bg-gray-800 rounded-lg p-4 border border-gray-700 hover:border-purple-500 transition-colors cursor-pointer"
+                onClick={() => navigate(`/chat/${chat._id}`)}
+              >
+                <div className="flex items-center space-x-4">
+                  {/* Chat Avatar */}
+                  <div className="w-12 h-12 rounded-full bg-gray-600 flex items-center justify-center">
+                    {chat.chatType === "group" ? (
+                      <Users size={20} className="text-gray-400" />
+                    ) : (
+                      <span className="text-white font-medium text-sm">
+                        {chat.participants?.[0]?.firstName?.charAt(0) || "U"}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Chat Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-white font-medium truncate">
+                        {chat.chatType === "group"
+                          ? chat.name
+                          : `${chat.participants?.[0]?.firstName} ${chat.participants?.[0]?.lastName}`}
+                      </h3>
+                      {chat.lastMessage && (
+                        <span className="text-gray-400 text-sm">
+                          {new Date(
+                            chat.lastMessage.createdAt
+                          ).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
+
+                    {chat.lastMessage ? (
+                      <p className="text-gray-400 text-sm truncate">
+                        {chat.lastMessage.sender?.firstName}:{" "}
+                        {chat.lastMessage.content}
+                      </p>
+                    ) : (
+                      <p className="text-gray-500 text-sm">No messages yet</p>
+                    )}
+                  </div>
+
+                  {/* Unread Count */}
+                  {chat.unreadCount > 0 && (
+                    <div className="bg-purple-600 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
+                      {chat.unreadCount}
+                    </div>
+                  )}
+                </div>
+              </div>
             ))}
           </div>
+        )}
+      </div>
 
-          {/* Load More */}
-          {hasMore && (
-            <div className="text-center py-6">
+      {/* Create Group Modal */}
+      {showCreateGroup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
+            <h2 className="text-white text-xl font-semibold mb-4">
+              Create Group Chat
+            </h2>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-gray-300 text-sm font-medium mb-2">
+                  Group Name
+                </label>
+                <input
+                  type="text"
+                  value={groupForm.name}
+                  onChange={(e) =>
+                    setGroupForm((prev) => ({ ...prev, name: e.target.value }))
+                  }
+                  className="w-full bg-gray-700 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="Enter group name"
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-300 text-sm font-medium mb-2">
+                  Description (optional)
+                </label>
+                <textarea
+                  value={groupForm.description}
+                  onChange={(e) =>
+                    setGroupForm((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
+                  className="w-full bg-gray-700 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="Enter group description"
+                  rows={3}
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-300 text-sm font-medium mb-2">
+                  Select Participants
+                </label>
+                <div className="max-h-32 overflow-y-auto bg-gray-700 rounded-lg p-2">
+                  {availableUsers.map((user) => (
+                    <label
+                      key={user._id}
+                      className="flex items-center space-x-2 p-2 hover:bg-gray-600 rounded cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={groupForm.participants.includes(user._id)}
+                        onChange={() => toggleParticipant(user._id)}
+                        className="text-purple-600 rounded focus:ring-purple-500"
+                      />
+                      <span className="text-white text-sm">
+                        {user.firstName} {user.lastName}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-4">
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={groupForm.isPrivate}
+                    onChange={(e) =>
+                      setGroupForm((prev) => ({
+                        ...prev,
+                        isPrivate: e.target.checked,
+                      }))
+                    }
+                    className="text-purple-600 rounded focus:ring-purple-500"
+                  />
+                  <span className="text-gray-300 text-sm">Private Group</span>
+                </label>
+
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={groupForm.allowMemberInvites}
+                    onChange={(e) =>
+                      setGroupForm((prev) => ({
+                        ...prev,
+                        allowMemberInvites: e.target.checked,
+                      }))
+                    }
+                    className="text-purple-600 rounded focus:ring-purple-500"
+                  />
+                  <span className="text-gray-300 text-sm">Allow Invites</span>
+                </label>
+              </div>
+            </div>
+
+            <div className="flex space-x-3 mt-6">
               <button
-                onClick={loadMoreChats}
-                disabled={loading}
-                className="bg-gray-800 hover:bg-gray-700 px-6 py-3 rounded-lg text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => setShowCreateGroup(false)}
+                className="flex-1 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
               >
-                {loading ? (
-                  <div className="flex items-center space-x-2">
-                    <Loader2 size={16} className="animate-spin" />
-                    <span>Loading...</span>
-                  </div>
-                ) : (
-                  "Load More Conversations"
-                )}
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateGroup}
+                disabled={
+                  isCreatingGroup ||
+                  !groupForm.name ||
+                  groupForm.participants.length < 1
+                }
+                className="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isCreatingGroup ? "Creating..." : "Create Group"}
               </button>
             </div>
-          )}
+          </div>
         </div>
       )}
     </div>

@@ -14,6 +14,7 @@ const userRoutes = require("./routes/users");
 const postRoutes = require("./routes/posts");
 const chatRoutes = require("./routes/chat");
 const notificationRoutes = require("./routes/notifications");
+const requestRoutes = require("./routes/requests");
 
 const app = express();
 const server = createServer(app);
@@ -177,6 +178,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/requests", requestRoutes);
 
 // Health check route
 app.get("/api/health", (req, res) => {
