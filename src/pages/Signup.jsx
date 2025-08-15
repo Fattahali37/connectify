@@ -1,6 +1,14 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Mail, Lock, User, UserCheck } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  User,
+  UserCheck,
+  Sparkles,
+} from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 
 function Signup() {
@@ -25,6 +33,8 @@ function Signup() {
       ...formData,
       [e.target.name]: e.target.value,
     });
+    // Clear error when user starts typing
+    if (error) setError("");
   };
 
   const handleSubmit = async (e) => {
@@ -40,6 +50,12 @@ function Signup() {
     // Validate password length
     if (formData.password.length < 6) {
       setError("Password must be at least 6 characters long");
+      return;
+    }
+
+    // Validate username
+    if (formData.username.length < 3) {
+      setError("Username must be at least 3 characters long");
       return;
     }
 
@@ -60,17 +76,17 @@ function Signup() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center px-4 py-8">
       <div className="max-w-md w-full space-y-8">
         {/* Logo and Title */}
         <div className="text-center">
-          <div className="mx-auto h-20 w-20 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center mb-6">
-            <UserCheck size={40} className="text-white" />
+          <div className="mx-auto h-20 w-20 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center mb-6 shadow-lg">
+            <Sparkles size={40} className="text-white" />
           </div>
-          <h2 className="text-3xl font-bold text-white mb-2">
+          <h1 className="text-3xl lg:text-4xl font-bold text-white mb-2">
             Join Connectify
-          </h2>
-          <p className="text-gray-400">
+          </h1>
+          <p className="text-gray-400 text-lg">
             Create your account and start connecting
           </p>
         </div>
@@ -78,14 +94,15 @@ function Signup() {
         {/* Signup Form */}
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="bg-red-500 bg-opacity-10 border border-red-500 text-red-500 px-4 py-3 rounded-lg text-sm">
-              {error}
+            <div className="bg-red-900 bg-opacity-20 border border-red-500 text-red-400 px-4 py-3 rounded-lg text-sm flex items-center space-x-2">
+              <span>⚠️</span>
+              <span>{error}</span>
             </div>
           )}
 
-          <div className="space-y-4">
+          <div className="space-y-5">
             {/* Name Fields */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label
                   htmlFor="firstName"
@@ -105,7 +122,7 @@ function Signup() {
                     required
                     value={formData.firstName}
                     onChange={handleChange}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-600 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="block w-full pl-10 pr-3 py-3 border border-gray-600 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
                     placeholder="First name"
                   />
                 </div>
@@ -130,7 +147,7 @@ function Signup() {
                     required
                     value={formData.lastName}
                     onChange={handleChange}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-600 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="block w-full pl-10 pr-3 py-3 border border-gray-600 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
                     placeholder="Last name"
                   />
                 </div>
@@ -147,7 +164,7 @@ function Signup() {
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User size={20} className="text-gray-400" />
+                  <UserCheck size={20} className="text-gray-400" />
                 </div>
                 <input
                   id="username"
@@ -157,8 +174,9 @@ function Signup() {
                   required
                   value={formData.username}
                   onChange={handleChange}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-600 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-600 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
                   placeholder="Choose a username"
+                  minLength={3}
                 />
               </div>
             </div>
@@ -183,7 +201,7 @@ function Signup() {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-600 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-600 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
                   placeholder="Enter your email"
                 />
               </div>
@@ -209,27 +227,22 @@ function Signup() {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="block w-full pl-10 pr-12 py-3 border border-gray-600 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="block w-full pl-10 pr-12 py-3 border border-gray-600 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
                   placeholder="Create a password"
+                  minLength={6}
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-300 transition-colors"
                   onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  {showPassword ? (
-                    <EyeOff
-                      size={20}
-                      className="text-gray-400 hover:text-gray-300"
-                    />
-                  ) : (
-                    <Eye
-                      size={20}
-                      className="text-gray-400 hover:text-gray-300"
-                    />
-                  )}
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
+              <p className="text-gray-400 text-xs mt-1">
+                Must be at least 6 characters long
+              </p>
             </div>
 
             {/* Confirm Password Field */}
@@ -252,24 +265,22 @@ function Signup() {
                   required
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="block w-full pl-10 pr-12 py-3 border border-gray-600 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="block w-full pl-10 pr-12 py-3 border border-gray-600 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
                   placeholder="Confirm your password"
+                  minLength={6}
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-300 transition-colors"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  aria-label={
+                    showConfirmPassword ? "Hide password" : "Show password"
+                  }
                 >
                   {showConfirmPassword ? (
-                    <EyeOff
-                      size={20}
-                      className="text-gray-400 hover:text-gray-300"
-                    />
+                    <EyeOff size={20} />
                   ) : (
-                    <Eye
-                      size={20}
-                      className="text-gray-400 hover:text-gray-300"
-                    />
+                    <Eye size={20} />
                   )}
                 </button>
               </div>
@@ -280,7 +291,7 @@ function Signup() {
           <button
             type="submit"
             disabled={isLoading}
-            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 transform"
           >
             {isLoading ? (
               <div className="flex items-center space-x-2">
@@ -299,7 +310,7 @@ function Signup() {
             Already have an account?{" "}
             <Link
               to="/login"
-              className="text-purple-400 hover:text-purple-300 font-medium transition-colors"
+              className="text-purple-400 hover:text-purple-300 font-medium transition-colors hover:underline"
             >
               Sign in here
             </Link>

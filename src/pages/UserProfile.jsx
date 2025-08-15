@@ -58,20 +58,20 @@ function UserProfile() {
   const loadUserProfile = async () => {
     try {
       setIsLoading(true);
-      const [
-        userResponse,
-        postsResponse,
-        followersResponse,
-        followingResponse,
-      ] = await Promise.all([
-        api.getUserByUsername(username),
-        api.getUserPosts(userResponse?.data?.user?._id || username),
-        api.getFollowers(userResponse?.data?.user?._id || username),
-        api.getFollowing(userResponse?.data?.user?._id || username),
-      ]);
 
+      // First get the user data
+      const userResponse = await api.getUserByUsername(username);
       const userData = userResponse.data.user;
       setUser(userData);
+
+      // Then get the related data using the userId
+      const [postsResponse, followersResponse, followingResponse] =
+        await Promise.all([
+          api.getUserPosts(userData._id),
+          api.getFollowers(userData._id),
+          api.getFollowing(userData._id),
+        ]);
+
       setPosts(postsResponse.data.posts || []);
       setFollowersCount(followersResponse.data.followers?.length || 0);
       setFollowingCount(followingResponse.data.following?.length || 0);

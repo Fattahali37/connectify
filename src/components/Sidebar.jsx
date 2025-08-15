@@ -9,11 +9,12 @@ import {
   Users,
   Bell,
   LogOut,
+  X,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import api from "../services/api";
 
-function Sidebar({ onLogout }) {
+function Sidebar({ onLogout, onClose }) {
   const location = useLocation();
   const { user } = useAuth();
   const [pendingRequests, setPendingRequests] = useState(0);
@@ -22,16 +23,20 @@ function Sidebar({ onLogout }) {
   useEffect(() => {
     const loadPendingRequests = async () => {
       try {
-        const [followResponse, friendResponse, groupResponse] = await Promise.all([
-          api.getFollowRequests(),
-          api.getFriendRequests(),
-          api.getGroupInvites(),
-        ]);
+        const [followResponse, friendResponse, groupResponse] =
+          await Promise.all([
+            api.getFollowRequests(),
+            api.getFriendRequests(),
+            api.getGroupInvites(),
+          ]);
 
-        const totalPending = 
-          (followResponse.data.requests?.filter(r => r.status === "pending").length || 0) +
-          (friendResponse.data.requests?.filter(r => r.status === "pending").length || 0) +
-          (groupResponse.data.requests?.filter(r => r.status === "pending").length || 0);
+        const totalPending =
+          (followResponse.data.requests?.filter((r) => r.status === "pending")
+            .length || 0) +
+          (friendResponse.data.requests?.filter((r) => r.status === "pending")
+            .length || 0) +
+          (groupResponse.data.requests?.filter((r) => r.status === "pending")
+            .length || 0);
 
         setPendingRequests(totalPending);
       } catch (error) {
@@ -44,30 +49,37 @@ function Sidebar({ onLogout }) {
 
   const isActive = (path) => location.pathname === path;
 
+  const handleNavClick = () => {
+    // Close sidebar on mobile when navigation item is clicked
+    if (onClose) {
+      onClose();
+    }
+  };
+
   const navItems = [
     { path: "/", icon: Home, label: "Home" },
     { path: "/profile", icon: User, label: "Profile" },
     { path: "/search", icon: Search, label: "Search" },
     { path: "/chat", icon: MessageCircle, label: "Messages" },
     { path: "/create-post", icon: Plus, label: "Create Post" },
-    { 
-      path: "/requests", 
-      icon: Bell, 
+    {
+      path: "/requests",
+      icon: Bell,
       label: "Requests",
-      badge: pendingRequests > 0 ? pendingRequests : null
+      badge: pendingRequests > 0 ? pendingRequests : null,
     },
   ];
 
   return (
-    <div className="w-64 bg-gray-800 border-r border-gray-700 flex flex-col">
-      {/* User Profile Section */}
-      <div className="p-6 border-b border-gray-700">
-        <div className="flex items-center space-x-3">
+    <div className="w-64 bg-gray-800 border-r border-gray-700 flex flex-col h-full">
+      {/* Header with close button for mobile */}
+      <div className="p-6 border-b border-gray-700 flex items-center justify-between">
+        <div className="flex items-center space-x-3 flex-1">
           <div className="w-12 h-12 rounded-full bg-gray-600 flex items-center justify-center">
             {user?.profilePicture ? (
               <img
                 src={user.profilePicture}
-                alt=""
+                alt={`${user.firstName} ${user.lastName}`}
                 className="w-12 h-12 rounded-full object-cover"
               />
             ) : (
@@ -83,6 +95,17 @@ function Sidebar({ onLogout }) {
             <p className="text-gray-400 text-sm truncate">@{user?.username}</p>
           </div>
         </div>
+
+        {/* Close button for mobile */}
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="lg:hidden text-gray-400 hover:text-white p-1 rounded-md hover:bg-gray-700 transition-colors"
+            aria-label="Close sidebar"
+          >
+            <X size={20} />
+          </button>
+        )}
       </div>
 
       {/* Navigation */}
@@ -93,16 +116,18 @@ function Sidebar({ onLogout }) {
             <Link
               key={item.path}
               to={item.path}
-              className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+              onClick={handleNavClick}
+              className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                 isActive(item.path)
-                  ? "bg-purple-600 text-white"
-                  : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                  ? "bg-purple-600 text-white shadow-lg transform scale-105"
+                  : "text-gray-300 hover:bg-gray-700 hover:text-white hover:transform hover:scale-105"
               }`}
+              aria-label={item.label}
             >
               <Icon size={20} />
               <span className="flex-1">{item.label}</span>
               {item.badge && (
-                <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
+                <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center animate-pulse">
                   {item.badge}
                 </span>
               )}
@@ -115,7 +140,8 @@ function Sidebar({ onLogout }) {
       <div className="p-4 border-t border-gray-700">
         <button
           onClick={onLogout}
-          className="w-full flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors"
+          className="w-full flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-all duration-200 hover:transform hover:scale-105"
+          aria-label="Logout"
         >
           <LogOut size={20} />
           <span>Logout</span>

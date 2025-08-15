@@ -652,6 +652,108 @@ const uploadProfilePicture = async (req, res) => {
   }
 };
 
+// @desc    Get a specific user's followers
+// @route   GET /api/users/:userId/followers
+// @access  Public
+const getUserFollowers = async (req, res) => {
+  try {
+    const { page = 1, limit = 20 } = req.query;
+    const skip = (page - 1) * limit;
+
+    const user = await User.findById(req.params.userId);
+    if (!user || !user.isActive) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const followers = await User.find({
+      _id: { $in: user.followers },
+    })
+      .select("username firstName lastName bio profilePicture")
+      .limit(limit)
+      .skip(skip);
+
+    const total = user.followers.length;
+
+    res.json({
+      success: true,
+      data: {
+        followers,
+        pagination: {
+          currentPage: parseInt(page),
+          totalPages: Math.ceil(total / limit),
+          totalFollowers: total,
+          hasNextPage: page * limit < total,
+          hasPrevPage: page > 1,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Get user followers error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching user followers",
+      error:
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "Internal server error",
+    });
+  }
+};
+
+// @desc    Get a specific user's following
+// @route   GET /api/users/:userId/following
+// @access  Public
+const getUserFollowing = async (req, res) => {
+  try {
+    const { page = 1, limit = 20 } = req.query;
+    const skip = (page - 1) * limit;
+
+    const user = await User.findById(req.params.userId);
+    if (!user || !user.isActive) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const following = await User.find({
+      _id: { $in: user.following },
+    })
+      .select("username firstName lastName bio profilePicture")
+      .limit(limit)
+      .skip(skip);
+
+    const total = user.following.length;
+
+    res.json({
+      success: true,
+      data: {
+        following,
+        pagination: {
+          currentPage: parseInt(page),
+          totalPages: Math.ceil(total / limit),
+          totalFollowing: total,
+          hasNextPage: page * limit < total,
+          hasPrevPage: page > 1,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Get user following error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching user following",
+      error:
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "Internal server error",
+    });
+  }
+};
+
 module.exports = {
   getUserProfile,
   updateProfile,
@@ -665,4 +767,6 @@ module.exports = {
   getUserPosts,
   deleteAccount,
   uploadProfilePicture,
+  getUserFollowers,
+  getUserFollowing,
 };
