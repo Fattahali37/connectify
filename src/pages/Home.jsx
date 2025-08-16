@@ -1,6 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Loader2, RefreshCw, Users, Search, TrendingUp } from "lucide-react";
+import {
+  Plus,
+  Loader2,
+  RefreshCw,
+  Users,
+  Search,
+  TrendingUp,
+  Heart,
+  MessageCircle,
+  Bookmark,
+  Share,
+} from "lucide-react";
 import Post from "../components/Post";
 import LoadingSkeleton from "../components/LoadingSkeleton";
 import api from "../services/api";
@@ -67,9 +78,29 @@ function Home() {
   };
 
   const refreshPosts = async () => {
-    setRefreshing(true);
-    await fetchPosts(1, false);
-    setRefreshing(false);
+    try {
+      setRefreshing(true);
+      setError(""); // Clear any existing errors
+      setCurrentPage(1); // Reset to first page
+      setHasMore(true); // Reset pagination
+
+      // Fetch fresh posts from the beginning
+      const response = await api.getPosts(1);
+
+      setPosts(response.data.posts);
+      setCurrentPage(response.data.pagination.currentPage);
+      setHasMore(response.data.pagination.hasNextPage);
+      setIsNewUser(response.data.isNewUser || false);
+    } catch (error) {
+      console.error("Error refreshing posts:", error);
+      setError("Failed to refresh posts. Please try again.");
+      if (error.status === 401) {
+        api.removeToken();
+        navigate("/login");
+      }
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   const loadMorePosts = async () => {
@@ -97,27 +128,43 @@ function Home() {
   };
 
   return (
-    <div className="flex-1 bg-gray-900 page-content">
+    <div className="flex-1 bg-black page-content">
       {/* Header */}
-      <div className="bg-gray-800 border-b border-gray-700 px-4 lg:px-6 py-4 sticky top-0 z-10">
+      <div className="nav-instagram px-4 lg:px-6 py-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-white text-xl lg:text-2xl font-semibold">Home</h1>
-            <p className="text-gray-400 text-sm hidden sm:block">Discover what's happening in your network</p>
+            <h1 className="text-white text-xl lg:text-2xl font-semibold">
+              Home
+            </h1>
+            <p className="text-gray-400 text-sm hidden sm:block">
+              Discover what's happening in your network
+            </p>
           </div>
-          
+
           {/* Action buttons */}
           <div className="flex items-center space-x-2">
             <button
+              onClick={refreshPosts}
+              disabled={refreshing}
+              className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors disabled:opacity-50"
+              aria-label="Refresh posts"
+              title="Refresh posts"
+            >
+              <RefreshCw
+                size={20}
+                className={refreshing ? "animate-spin" : ""}
+              />
+            </button>
+            <button
               onClick={handleSearchUsers}
-              className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors lg:hidden"
+              className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors lg:hidden"
               aria-label="Search users"
             >
               <Search size={20} />
             </button>
             <button
               onClick={handleCreatePost}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg transition-all duration-200 hover:scale-105 flex items-center space-x-2 text-sm"
+              className="btn-instagram px-3 py-2 flex items-center space-x-2 text-sm"
             >
               <Plus size={18} />
               <span className="hidden sm:inline">Create Post</span>
@@ -130,8 +177,8 @@ function Home() {
       <div className="posts-container p-4 lg:p-6">
         {/* Error state */}
         {error && (
-          <div className="bg-red-900 bg-opacity-20 border border-red-500 text-red-400 px-4 py-3 rounded-lg mb-6 flex items-center justify-between">
-            <span>{error}</span>
+          <div className="notification-instagram mb-6 flex items-center justify-between">
+            <span className="text-red-400">{error}</span>
             <button
               onClick={refreshPosts}
               className="text-red-400 hover:text-red-300 transition-colors"
@@ -143,29 +190,30 @@ function Home() {
 
         {/* Loading state */}
         {loading && !refreshing ? (
-          <LoadingSkeleton type="post" count={3} />
+          <div className="max-w-2xl mx-auto">
+            <LoadingSkeleton type="post" count={3} />
+          </div>
         ) : posts.length === 0 ? (
           /* Empty state */
-          <div className="text-center py-12">
-            <div className="text-gray-400 mx-auto mb-4">
+          <div className="empty-state-instagram max-w-2xl mx-auto">
+            <div className="empty-state-icon">
               <TrendingUp className="w-16 h-16 mx-auto" />
             </div>
-            <h3 className="text-lg font-medium text-gray-300 mb-2">
-              No posts yet
-            </h3>
-            <p className="text-gray-500 mb-6 max-w-md mx-auto">
-              Be the first to share something! Start connecting with others by creating your first post.
+            <h3 className="empty-state-title">No posts yet</h3>
+            <p className="empty-state-description">
+              Be the first to share something! Start connecting with others by
+              creating your first post.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button
                 onClick={handleCreatePost}
-                className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg transition-all duration-200 hover:scale-105"
+                className="btn-instagram px-6 py-3"
               >
                 Create Post
               </button>
               <button
                 onClick={handleSearchUsers}
-                className="border border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white px-6 py-3 rounded-lg transition-all duration-200 hover:scale-105"
+                className="btn-instagram-outline px-6 py-3"
               >
                 Find People
               </button>
@@ -173,16 +221,22 @@ function Home() {
           </div>
         ) : (
           /* Posts list */
-          <div className="space-y-6">
+          <div className="max-w-2xl mx-auto space-y-6">
             {/* Refresh button */}
-            <div className="flex justify-center">
+            <div className="flex justify-center mb-4">
               <button
                 onClick={refreshPosts}
                 disabled={refreshing}
-                className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors disabled:opacity-50"
+                className="btn-instagram-outline px-4 py-2 flex items-center space-x-2 hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="Refresh posts"
               >
-                <RefreshCw size={16} className={refreshing ? "animate-spin" : ""} />
-                <span>{refreshing ? "Refreshing..." : "Refresh"}</span>
+                <RefreshCw
+                  size={18}
+                  className={`${refreshing ? "animate-spin" : ""}`}
+                />
+                <span className="font-medium">
+                  {refreshing ? "Refreshing..." : "Refresh Posts"}
+                </span>
               </button>
             </div>
 
@@ -203,7 +257,7 @@ function Home() {
                 <button
                   onClick={loadMorePosts}
                   disabled={loading}
-                  className="bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition-colors disabled:opacity-50 flex items-center space-x-2"
+                  className="btn-instagram-secondary disabled:opacity-50 flex items-center space-x-2"
                 >
                   {loading ? (
                     <>

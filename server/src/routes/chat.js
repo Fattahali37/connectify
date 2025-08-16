@@ -113,5 +113,6 @@ router.post("/:chatId/read", protect, chatController.markChatAsRead);
 router.post("/:chatId/typing/start", protect, chatController.startTyping);
 router.post("/:chatId/typing/stop", protect, chatController.stopTyping);
 router.get("/:chatId/typing", protect, chatController.getTypingUsers);
+router.delete("/:chatId", protect, chatController.deleteChat);
 
 module.exports = router;

@@ -1,6 +1,16 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Image, Send, X, Loader2, Camera, MapPin, Tag } from "lucide-react";
+import {
+  Image,
+  Send,
+  X,
+  Loader2,
+  Camera,
+  MapPin,
+  Tag,
+  ArrowLeft,
+  MessageCircle,
+} from "lucide-react";
 import api from "../services/api";
 
 function CreatePost() {
@@ -9,6 +19,7 @@ function CreatePost() {
     image: "",
     tags: "",
     location: "",
+    privacy: "public", // Added privacy field
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -78,6 +89,7 @@ function CreatePost() {
         image: formData.image.trim(),
         tags: formData.tags.trim(),
         location: formData.location.trim(),
+        privacy: formData.privacy, // Include privacy
       };
 
       // Remove empty fields
@@ -103,6 +115,7 @@ function CreatePost() {
       image: "",
       tags: "",
       location: "",
+      privacy: "public", // Reset privacy
     });
     setError("");
     setImageError("");
@@ -113,192 +126,212 @@ function CreatePost() {
     (formData.caption.trim() || formData.image.trim()) && !imageError;
 
   return (
-    <div className="min-h-full bg-gray-900 py-6 px-4">
-      <div className="max-w-2xl mx-auto">
-        <div className="bg-gray-900 rounded-xl p-4 lg:p-6 shadow-lg">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl lg:text-3xl font-bold text-white">
-              Create Post
-            </h1>
-            <button
-              onClick={() => navigate("/")}
-              className="text-gray-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-gray-800"
-              aria-label="Close"
-            >
-              <X size={24} />
-            </button>
-          </div>
-
-          {/* Error Display */}
-          {error && (
-            <div className="bg-red-900 bg-opacity-20 border border-red-500 text-red-400 p-4 rounded-lg text-center mb-6">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Caption */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                What's on your mind?
-              </label>
-              <textarea
-                name="caption"
-                value={formData.caption}
-                onChange={handleChange}
-                rows={4}
-                placeholder="Share your thoughts, ideas, or experiences..."
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500 resize-none transition-all duration-200"
-                disabled={isSubmitting}
-                maxLength={1000}
-              />
-              <div className="text-right mt-1">
-                <span className="text-xs text-gray-400">
-                  {formData.caption.length}/1000
-                </span>
+    <div className="flex-1 bg-black page-content">
+      {/* Header */}
+      <div className="nav-instagram px-4 lg:px-6 py-4">
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => navigate("/")}
+            className="text-gray-300 hover:text-white p-2 rounded-lg hover:bg-gray-800 transition-colors"
+            aria-label="Go back"
+          >
+            <ArrowLeft size={24} />
+          </button>
+          <h1 className="text-xl lg:text-2xl font-semibold text-white">
+            Create Post
+          </h1>
+          <button
+            onClick={handleSubmit}
+            disabled={isSubmitting || !formData.caption.trim()}
+            className="btn-instagram disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? (
+              <div className="flex items-center space-x-2">
+                <Loader2 size={18} className="animate-spin" />
+                <span>Posting...</span>
               </div>
-            </div>
+            ) : (
+              "Share"
+            )}
+          </button>
+        </div>
+      </div>
 
-            {/* Image URL */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                <div className="flex items-center space-x-2">
-                  <Camera size={16} />
-                  <span>Image URL (Optional)</span>
-                </div>
-              </label>
+      {/* Form */}
+      <div className="max-w-2xl mx-auto p-4 lg:p-6">
+        <div className="card-instagram p-6">
+          {/* Image Input */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-300 mb-3">
+              <div className="flex items-center space-x-2">
+                <Camera size={20} className="text-gray-400" />
+                <span>Post Image (Optional)</span>
+              </div>
+            </label>
+            <div className="space-y-3">
               <input
                 type="url"
                 name="image"
                 value={formData.image}
                 onChange={handleImageChange}
-                placeholder="https://example.com/image.jpg"
-                className={`w-full px-4 py-3 bg-gray-800 border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200 ${
-                  imageError
-                    ? "border-red-500"
-                    : "border-gray-700 focus:border-purple-500"
-                }`}
-                disabled={isSubmitting}
+                placeholder="Enter image URL (e.g., https://example.com/image.jpg)"
+                className="input-instagram"
+                aria-label="Image URL"
               />
               {imageError && (
-                <p className="text-red-400 text-sm mt-1">{imageError}</p>
+                <p className="text-red-400 text-sm">{imageError}</p>
+              )}
+              {imagePreview && (
+                <div className="relative">
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="w-full max-h-96 object-cover rounded-lg border border-gray-600"
+                    onError={() => setImageError("Failed to load image")}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData((prev) => ({ ...prev, image: "" }));
+                      setImagePreview(null);
+                      setImageError("");
+                    }}
+                    className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
+                    aria-label="Remove image"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
               )}
             </div>
+          </div>
 
-            {/* Tags */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                <div className="flex items-center space-x-2">
-                  <Tag size={16} />
-                  <span>Tags (Optional)</span>
-                </div>
-              </label>
-              <input
-                type="text"
-                name="tags"
-                value={formData.tags}
-                onChange={handleChange}
-                placeholder="fun, lifestyle, tech (comma separated)"
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500 transition-all duration-200"
-                disabled={isSubmitting}
-              />
-              <p className="text-gray-400 text-sm mt-1">
-                Separate tags with commas to help others discover your post
-              </p>
-            </div>
-
-            {/* Location */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                <div className="flex items-center space-x-2">
-                  <MapPin size={16} />
-                  <span>Location (Optional)</span>
-                </div>
-              </label>
-              <input
-                type="text"
-                name="location"
-                value={formData.location}
-                onChange={handleChange}
-                placeholder="New York, NY"
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500 transition-all duration-200"
-                disabled={isSubmitting}
-              />
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3 pt-4">
-              <button
-                type="button"
-                onClick={handleClear}
-                disabled={isSubmitting}
-                className="px-6 py-3 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-800 hover:text-white transition-all duration-200 disabled:opacity-50"
-              >
-                Clear
-              </button>
-              <button
-                type="submit"
-                disabled={!isFormValid || isSubmitting}
-                className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center space-x-2 hover:scale-105 transform"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 size={16} className="animate-spin" />
-                    <span>Creating...</span>
-                  </>
-                ) : (
-                  <>
-                    <Send size={16} />
-                    <span>Create Post</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
-
-          {/* Preview */}
-          {(formData.caption || formData.image) && (
-            <div className="mt-8 border-t border-gray-800 pt-6">
-              <h3 className="text-lg font-semibold text-white mb-4">Preview</h3>
-              <div className="bg-gray-800 rounded-lg p-4">
-                {imagePreview && (
-                  <div className="mb-4">
-                    <img
-                      src={imagePreview}
-                      alt="Preview"
-                      className="w-full max-h-96 object-cover rounded-lg"
-                      onError={(e) => {
-                        e.target.style.display = "none";
-                        setImageError("Failed to load image");
-                      }}
-                    />
-                  </div>
-                )}
-                {formData.caption && (
-                  <p className="text-white mb-3">{formData.caption}</p>
-                )}
-                {formData.tags && (
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {formData.tags.split(",").map((tag, index) => (
-                      <span
-                        key={index}
-                        className="bg-purple-600 text-white px-2 py-1 rounded-full text-xs"
-                      >
-                        {tag.trim()}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                {formData.location && (
-                  <p className="text-gray-400 text-sm flex items-center">
-                    <MapPin size={14} className="mr-1" />
-                    {formData.location}
-                  </p>
-                )}
+          {/* Caption Input */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-300 mb-3">
+              <div className="flex items-center space-x-2">
+                <MessageCircle size={20} className="text-gray-400" />
+                <span>Caption</span>
               </div>
+            </label>
+            <textarea
+              name="caption"
+              value={formData.caption}
+              onChange={handleChange}
+              placeholder="What's on your mind?"
+              rows={4}
+              maxLength={500}
+              className="input-instagram resize-none"
+              aria-label="Post caption"
+            />
+            <div className="flex justify-between items-center mt-2">
+              <span className="text-xs text-gray-400">
+                {formData.caption.length}/500 characters
+              </span>
+              {formData.caption.length > 450 && (
+                <span className="text-xs text-yellow-400">
+                  {formData.caption.length > 480 ? "⚠️" : "⚠️"}
+                </span>
+              )}
             </div>
-          )}
+          </div>
+
+          {/* Location Input */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-300 mb-3">
+              <div className="flex items-center space-x-2">
+                <MapPin size={20} className="text-gray-400" />
+                <span>Location (Optional)</span>
+              </div>
+            </label>
+            <input
+              type="text"
+              name="location"
+              value={formData.location}
+              onChange={handleChange}
+              placeholder="Add location"
+              className="input-instagram"
+              aria-label="Location"
+            />
+          </div>
+
+          {/* Tags Input */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-300 mb-3">
+              <div className="flex items-center space-x-2">
+                <Tag size={20} className="text-gray-400" />
+                <span>Tags (Optional)</span>
+              </div>
+            </label>
+            <input
+              type="text"
+              name="tags"
+              value={formData.tags}
+              onChange={handleChange}
+              placeholder="Add tags separated by commas (e.g., #fun, #life, #friends)"
+              className="input-instagram"
+              aria-label="Tags"
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              Use hashtags to help others discover your post
+            </p>
+          </div>
+
+          {/* Privacy Settings */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-300 mb-3">
+              Privacy
+            </label>
+            <div className="space-y-2">
+              <label className="flex items-center space-x-3">
+                <input
+                  type="radio"
+                  name="privacy"
+                  value="public"
+                  checked={formData.privacy === "public"}
+                  onChange={handleChange}
+                  className="text-blue-500 focus:ring-blue-500"
+                />
+                <span className="text-gray-300">
+                  Public - Anyone can see this post
+                </span>
+              </label>
+              <label className="flex items-center space-x-3">
+                <input
+                  type="radio"
+                  name="privacy"
+                  value="friends"
+                  checked={formData.privacy === "friends"}
+                  onChange={handleChange}
+                  className="text-blue-500 focus:ring-blue-500"
+                />
+                <span className="text-gray-300">
+                  Friends only - Only your friends can see this post
+                </span>
+              </label>
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <div className="flex justify-end">
+            <button
+              onClick={handleSubmit}
+              disabled={isSubmitting || !formData.caption.trim()}
+              className="btn-instagram px-8 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? (
+                <div className="flex items-center space-x-2">
+                  <Loader2 size={20} className="animate-spin" />
+                  <span>Creating Post...</span>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <Send size={20} />
+                  <span>Share Post</span>
+                </div>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

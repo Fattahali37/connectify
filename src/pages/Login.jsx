@@ -9,7 +9,7 @@ function Login() {
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   const { login } = useAuth();
@@ -27,7 +27,7 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setIsLoading(true);
+    setIsSubmitting(true);
 
     try {
       const result = await login(formData);
@@ -39,17 +39,17 @@ function Login() {
     } catch (error) {
       setError("An unexpected error occurred");
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-black flex items-center justify-center px-4 py-8">
       <div className="max-w-md w-full space-y-8">
         {/* Logo and Title */}
         <div className="text-center">
-          <div className="mx-auto h-20 w-20 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center mb-6 shadow-lg">
-            <Sparkles size={40} className="text-white" />
+          <div className="mx-auto h-20 w-20 gradient-instagram rounded-full flex items-center justify-center mb-6 shadow-lg">
+            <span className="text-white font-bold text-2xl">C</span>
           </div>
           <h1 className="text-3xl lg:text-4xl font-bold text-white mb-2">
             Welcome Back
@@ -62,7 +62,7 @@ function Login() {
         {/* Login Form */}
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="bg-red-900 bg-opacity-20 border border-red-500 text-red-400 px-4 py-3 rounded-lg text-sm flex items-center space-x-2">
+            <div className="notification-instagram border-red-800 bg-red-900 bg-opacity-20 text-red-400 flex items-center space-x-2">
               <span>⚠️</span>
               <span>{error}</span>
             </div>
@@ -78,9 +78,10 @@ function Login() {
                 Email Address
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail size={20} className="text-gray-400" />
-                </div>
+                <Mail
+                  size={20}
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                />
                 <input
                   id="email"
                   name="email"
@@ -89,9 +90,10 @@ function Login() {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-600 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                  onFocus={() => setError("")}
+                  className="input-instagram pl-10"
                   placeholder="Enter your email"
-                  aria-describedby="email-error"
+                  aria-label="Email address"
                 />
               </div>
             </div>
@@ -105,9 +107,10 @@ function Login() {
                 Password
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock size={20} className="text-gray-400" />
-                </div>
+                <Lock
+                  size={20}
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                />
                 <input
                   id="password"
                   name="password"
@@ -116,14 +119,15 @@ function Login() {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="block w-full pl-10 pr-12 py-3 border border-gray-600 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                  onFocus={() => setError("")}
+                  className="input-instagram pl-10 pr-10"
                   placeholder="Enter your password"
-                  aria-describedby="password-error"
+                  aria-label="Password"
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-300 transition-colors"
                   onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-400 transition-colors"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -135,11 +139,11 @@ function Login() {
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={isLoading}
-            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 transform"
+            disabled={isSubmitting}
+            className="btn-instagram w-full py-3 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? (
-              <div className="flex items-center space-x-2">
+            {isSubmitting ? (
+              <div className="flex items-center justify-center space-x-2">
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 <span>Signing in...</span>
               </div>
@@ -148,40 +152,35 @@ function Login() {
             )}
           </button>
 
-          {/* Forgot Password Link */}
+          {/* Demo Account Info */}
+          <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
+            <h3 className="text-blue-300 font-medium mb-2">Demo Account</h3>
+            <p className="text-blue-200 text-sm mb-2">
+              Use these credentials to test the app:
+            </p>
+            <div className="text-blue-100 text-sm space-y-1">
+              <p>
+                <strong>Email:</strong> demo@example.com
+              </p>
+              <p>
+                <strong>Password:</strong> demo123
+              </p>
+            </div>
+          </div>
+
+          {/* Sign Up Link */}
           <div className="text-center">
-            <a
-              href="#"
-              className="text-sm text-purple-400 hover:text-purple-300 transition-colors hover:underline"
-            >
-              Forgot your password?
-            </a>
+            <p className="text-gray-400">
+              Don't have an account?{" "}
+              <Link
+                to="/signup"
+                className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
+              >
+                Sign up here
+              </Link>
+            </p>
           </div>
         </form>
-
-        {/* Sign Up Link */}
-        <div className="text-center">
-          <p className="text-gray-400">
-            Don't have an account?{" "}
-            <Link
-              to="/signup"
-              className="text-purple-400 hover:text-purple-300 font-medium transition-colors hover:underline"
-            >
-              Sign up here
-            </Link>
-          </p>
-        </div>
-
-        {/* Demo Account Info */}
-        <div className="text-center p-4 bg-gray-800 rounded-lg">
-          <p className="text-gray-400 text-sm">
-            <strong>Demo Account:</strong>
-            <br />
-            Email: demo@connectify.com
-            <br />
-            Password: demo123
-          </p>
-        </div>
       </div>
     </div>
   );

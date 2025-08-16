@@ -223,12 +223,31 @@ function Message({
     <div
       className={`flex ${isOwnMessage ? "justify-end" : "justify-start"} mb-4`}
     >
+      {/* Sender avatar for other messages */}
+      {!isOwnMessage && (
+        <div className="flex-shrink-0 mr-2">
+          <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center">
+            {message.sender?.profilePicture ? (
+              <img
+                src={message.sender.profilePicture}
+                alt={message.sender.firstName}
+                className="w-8 h-8 rounded-full object-cover"
+              />
+            ) : (
+              <span className="text-white text-sm font-medium">
+                {message.sender?.firstName?.charAt(0) || "U"}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Message Content */}
       <div
         className={`max-w-xs lg:max-w-md ${
           isOwnMessage ? "order-2" : "order-1"
         }`}
       >
-        {/* Message Content */}
         <div
           className={`rounded-lg px-4 py-2 ${
             isOwnMessage ? "bg-purple-600 text-white" : "bg-gray-700 text-white"
@@ -326,7 +345,7 @@ function Message({
                 className={`p-1 rounded-full transition-colors ${
                   hasUserReaction("😊")
                     ? "bg-yellow-500 text-white"
-                    : "text-gray-400 hover:text-yellow-500 hover:bg-yellow-500 hover:bg-opacity-20"
+                    : "text-yellow-500 hover:bg-yellow-500 hover:bg-opacity-20"
                 } disabled:opacity-50`}
               >
                 <Smile size={14} />
@@ -369,10 +388,10 @@ function Message({
         </div>
       </div>
 
-      {/* Sender info for other messages */}
-      {!isOwnMessage && (
-        <div className="order-2 ml-2">
-          <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center">
+      {/* Sender avatar for own messages */}
+      {isOwnMessage && (
+        <div className="flex-shrink-0 ml-2">
+          <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center">
             {message.sender?.profilePicture ? (
               <img
                 src={message.sender.profilePicture}

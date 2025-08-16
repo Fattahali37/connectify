@@ -10,6 +10,11 @@ import {
   Bell,
   LogOut,
   X,
+  Heart,
+  Compass,
+  Play,
+  Bookmark,
+  Settings,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import api from "../services/api";
@@ -58,10 +63,10 @@ function Sidebar({ onLogout, onClose }) {
 
   const navItems = [
     { path: "/", icon: Home, label: "Home" },
-    { path: "/profile", icon: User, label: "Profile" },
     { path: "/search", icon: Search, label: "Search" },
     { path: "/chat", icon: MessageCircle, label: "Messages" },
-    { path: "/create-post", icon: Plus, label: "Create Post" },
+    { path: "/create-post", icon: Plus, label: "Create" },
+    { path: "/profile", icon: User, label: "Profile" },
     {
       path: "/requests",
       icon: Bell,
@@ -71,27 +76,16 @@ function Sidebar({ onLogout, onClose }) {
   ];
 
   return (
-    <div className="w-64 bg-gray-800 border-r border-gray-700 flex flex-col h-full">
+    <div className="w-64 bg-black border-r border-gray-800 flex flex-col h-full">
       {/* Header with close button for mobile */}
-      <div className="p-6 border-b border-gray-700 flex items-center justify-between">
+      <div className="p-6 border-b border-gray-800 flex items-center justify-between">
         <div className="flex items-center space-x-3 flex-1">
-          <div className="w-12 h-12 rounded-full bg-gray-600 flex items-center justify-center">
-            {user?.profilePicture ? (
-              <img
-                src={user.profilePicture}
-                alt={`${user.firstName} ${user.lastName}`}
-                className="w-12 h-12 rounded-full object-cover"
-              />
-            ) : (
-              <span className="text-white font-medium text-lg">
-                {user?.firstName?.charAt(0) || "U"}
-              </span>
-            )}
+          {/* Instagram-style logo */}
+          <div className="w-8 h-8 gradient-instagram rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-sm">C</span>
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-white font-semibold truncate">
-              {user?.firstName} {user?.lastName}
-            </h3>
+            <h3 className="text-white font-semibold truncate">Connectify</h3>
             <p className="text-gray-400 text-sm truncate">@{user?.username}</p>
           </div>
         </div>
@@ -100,7 +94,7 @@ function Sidebar({ onLogout, onClose }) {
         {onClose && (
           <button
             onClick={onClose}
-            className="lg:hidden text-gray-400 hover:text-white p-1 rounded-md hover:bg-gray-700 transition-colors"
+            className="lg:hidden text-gray-400 hover:text-white p-1 rounded-md hover:bg-gray-800 transition-colors"
             aria-label="Close sidebar"
           >
             <X size={20} />
@@ -119,8 +113,8 @@ function Sidebar({ onLogout, onClose }) {
               onClick={handleNavClick}
               className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                 isActive(item.path)
-                  ? "bg-purple-600 text-white shadow-lg transform scale-105"
-                  : "text-gray-300 hover:bg-gray-700 hover:text-white hover:transform hover:scale-105"
+                  ? "bg-gray-800 text-white font-semibold"
+                  : "text-gray-300 hover:bg-gray-800 hover:text-white"
               }`}
               aria-label={item.label}
             >
@@ -137,10 +131,10 @@ function Sidebar({ onLogout, onClose }) {
       </nav>
 
       {/* Logout Section */}
-      <div className="p-4 border-t border-gray-700">
+      <div className="p-4 border-t border-gray-800">
         <button
           onClick={onLogout}
-          className="w-full flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-all duration-200 hover:transform hover:scale-105"
+          className="w-full flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-all duration-200"
           aria-label="Logout"
         >
           <LogOut size={20} />

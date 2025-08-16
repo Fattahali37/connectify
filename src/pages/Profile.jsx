@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNotifications } from "../contexts/NotificationContext";
+import { useNavigate } from "react-router-dom";
 import {
   User,
   Edit,
@@ -28,15 +29,19 @@ import {
   Share2,
   MoreVertical,
   LogOut,
+  Grid,
+  Bookmark as BookmarkIcon,
+  UserCheck,
 } from "lucide-react";
 import api from "../services/api";
 
 function Profile() {
   const { user, updateUser } = useAuth();
   const { success, error, info } = useNotifications();
+  const navigate = useNavigate();
 
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState("profile");
+  const [activeTab, setActiveTab] = useState("posts");
   const [showImageUpload, setShowImageUpload] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -53,17 +58,6 @@ function Profile() {
     dateOfBirth: "",
     gender: "",
     interests: [],
-  });
-
-  // Settings state
-  const [settings, setSettings] = useState({
-    emailNotifications: true,
-    pushNotifications: true,
-    profileVisibility: "public",
-    showOnlineStatus: true,
-    allowMessages: "everyone",
-    theme: "dark",
-    language: "en",
   });
 
   // Data state
@@ -231,184 +225,126 @@ function Profile() {
   }
 
   return (
-    <div className="flex-1 bg-gray-900 page-content">
-      {/* Profile Header */}
-      <div className="bg-gray-800 border-b border-gray-700 px-6 py-8">
-        <div className="flex items-start justify-between">
-          {/* Profile Info */}
-          <div className="flex items-start space-x-6">
-            {/* Profile Picture */}
-            <div className="relative">
-              <div className="w-24 h-24 rounded-full bg-gray-600 flex items-center justify-center overflow-hidden">
-                {user?.profilePicture ? (
-                  <img
-                    src={user.profilePicture}
-                    alt=""
-                    className="w-24 h-24 object-cover"
-                  />
-                ) : (
-                  <span className="text-white font-medium text-3xl">
-                    {user?.firstName?.charAt(0) || "U"}
-                  </span>
-                )}
-              </div>
-
-              {/* Upload Button */}
-              <button
-                onClick={() => setShowImageUpload(true)}
-                className="absolute bottom-0 right-0 bg-purple-600 text-white p-2 rounded-full hover:bg-purple-700 transition-colors"
-                title="Change profile picture"
-              >
-                <Camera size={16} />
-              </button>
-            </div>
-
-            {/* User Details */}
-            <div className="flex-1">
-              <h1 className="text-white text-3xl font-bold mb-2">
-                {user?.firstName} {user?.lastName}
-              </h1>
-              <p className="text-gray-400 text-lg mb-3">@{user?.username}</p>
-
-              {user?.bio && (
-                <p className="text-gray-300 mb-4 max-w-2xl">{user.bio}</p>
+    <div className="flex-1 bg-black page-content">
+      {/* Profile Header - Instagram Style */}
+      <div className="px-4 py-6 max-w-4xl mx-auto">
+        <div className="flex items-start space-x-8">
+          {/* Profile Picture */}
+          <div className="relative">
+            <div className="w-24 h-24 rounded-full bg-gray-600 flex items-center justify-center overflow-hidden border-2 border-gray-700">
+              {user?.profilePicture ? (
+                <img
+                  src={user.profilePicture}
+                  alt=""
+                  className="w-24 h-24 object-cover rounded-full"
+                />
+              ) : (
+                <span className="text-white font-medium text-3xl">
+                  {user?.firstName?.charAt(0) || "U"}
+                </span>
               )}
-
-              {/* Stats */}
-              <div className="flex items-center space-x-8 text-sm">
-                <div className="text-center">
-                  <div className="text-white font-semibold text-lg">
-                    {stats.postsCount}
-                  </div>
-                  <div className="text-gray-400">Posts</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-white font-semibold text-lg">
-                    {stats.followersCount}
-                  </div>
-                  <div className="text-gray-400">Followers</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-white font-semibold text-lg">
-                    {stats.followingCount}
-                  </div>
-                  <div className="text-gray-400">Following</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-white font-semibold text-lg">
-                    {stats.totalLikes}
-                  </div>
-                  <div className="text-gray-400">Total Likes</div>
-                </div>
-              </div>
-
-              {/* Location and Join Date */}
-              <div className="flex items-center space-x-4 mt-4 text-gray-400 text-sm">
-                {user?.location && (
-                  <div className="flex items-center space-x-1">
-                    <MapPin size={16} />
-                    <span>{user.location}</span>
-                  </div>
-                )}
-                <div className="flex items-center space-x-1">
-                  <Calendar size={16} />
-                  <span>
-                    Joined {new Date(user?.createdAt).toLocaleDateString()}
-                  </span>
-                </div>
-              </div>
             </div>
+
+            {/* Upload Button */}
+            <button
+              onClick={() => setShowImageUpload(true)}
+              className="absolute bottom-0 right-0 bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 transition-colors border-2 border-white"
+              title="Change profile picture"
+            >
+              <Camera size={16} />
+            </button>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => setIsEditing(!isEditing)}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                isEditing
-                  ? "bg-gray-600 text-gray-300 hover:bg-gray-500"
-                  : "bg-purple-600 text-white hover:bg-purple-700"
-              }`}
-            >
-              <div className="flex items-center space-x-2">
-                {isEditing ? <X size={16} /> : <Edit size={16} />}
-                <span>{isEditing ? "Cancel" : "Edit Profile"}</span>
-              </div>
-            </button>
-
-            {isEditing && (
+          {/* Profile Info */}
+          <div className="flex-1">
+            {/* Username and Edit Button */}
+            <div className="flex items-center space-x-4 mb-4">
+              <h1 className="text-white text-2xl font-light">
+                @{user?.username}
+              </h1>
               <button
-                onClick={handleProfileUpdate}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
+                onClick={() => setIsEditing(!isEditing)}
+                className="px-4 py-1.5 bg-gray-800 text-white text-sm font-medium rounded hover:bg-gray-700 transition-colors"
               >
-                <Save size={16} />
-                <span>Save</span>
+                Edit profile
               </button>
-            )}
+            </div>
 
-            <button
-              onClick={() => setActiveTab("settings")}
-              className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
-              title="Settings"
-            >
-              <Settings size={20} />
-            </button>
+            {/* Stats Row */}
+            <div className="flex items-center space-x-8 mb-4">
+              <div className="text-center">
+                <span className="text-white font-semibold text-lg">
+                  {stats.postsCount}
+                </span>
+                <span className="text-gray-400 text-sm ml-1">posts</span>
+              </div>
+              <div className="text-center">
+                <span className="text-white font-semibold text-lg">
+                  {stats.followersCount}
+                </span>
+                <span className="text-gray-400 text-sm ml-1">followers</span>
+              </div>
+              <div className="text-center">
+                <span className="text-white font-semibold text-lg">
+                  {stats.followingCount}
+                </span>
+                <span className="text-gray-400 text-sm ml-1">following</span>
+              </div>
+            </div>
+
+            {/* Bio Section */}
+            <div className="mb-4">
+              <div className="text-white font-semibold mb-1">
+                {user?.firstName} {user?.lastName}
+              </div>
+              {user?.bio && (
+                <p className="text-white text-sm mb-2">{user.bio}</p>
+              )}
+              {user?.location && (
+                <p className="text-gray-400 text-sm mb-1">{user.location}</p>
+              )}
+              {user?.website && (
+                <a
+                  href={user.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-400 text-sm hover:underline"
+                >
+                  {user.website}
+                </a>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="bg-gray-800 border-b border-gray-700 px-6">
-        <div className="flex space-x-1">
-          {[
-            { id: "profile", label: "Profile", icon: User },
-            {
-              id: "posts",
-              label: "Posts",
-              icon: FileText,
-              count: stats.postsCount,
-            },
-            {
-              id: "followers",
-              label: "Followers",
-              icon: Users,
-              count: stats.followersCount,
-            },
-            {
-              id: "following",
-              label: "Following",
-              icon: Users,
-              count: stats.followingCount,
-            },
-            { id: "settings", label: "Settings", icon: Settings },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
-                  activeTab === tab.id
-                    ? "bg-gray-900 text-white border-b-2 border-purple-500"
-                    : "text-gray-400 hover:text-white hover:bg-gray-700"
-                }`}
-              >
-                <Icon size={16} />
-                <span>{tab.label}</span>
-                {tab.count !== undefined && (
-                  <span className="ml-2 text-gray-500">({tab.count})</span>
-                )}
-              </button>
-            );
-          })}
+      {/* Tabs - Instagram Style */}
+      <div className="border-t border-gray-800">
+        <div className="flex justify-center">
+          <div className="flex space-x-8">
+            <button
+              onClick={() => {
+                setActiveTab("posts");
+                setIsEditing(false); // Reset editing state when switching to posts
+              }}
+              className={`flex items-center space-x-2 py-3 border-t-2 transition-colors ${
+                activeTab === "posts"
+                  ? "border-white text-white"
+                  : "border-transparent text-gray-400 hover:text-white"
+              }`}
+            >
+              <Grid size={16} />
+              <span className="text-sm font-medium">POSTS</span>
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Tab Content */}
-      <div className="profile-content p-6">
-        {/* Profile Tab */}
-        {activeTab === "profile" && (
-          <div className="max-w-4xl mx-auto">
+      <div className="px-4 py-6 max-w-4xl mx-auto">
+        {/* Posts Tab */}
+        {activeTab === "posts" && (
+          <div>
             {isEditing ? (
               <ProfileEditForm
                 profileForm={profileForm}
@@ -417,103 +353,61 @@ function Profile() {
                 removeInterest={removeInterest}
               />
             ) : (
-              <ProfileView user={user} />
-            )}
-          </div>
-        )}
-
-        {/* Posts Tab */}
-        {activeTab === "posts" && (
-          <div className="space-y-6">
-            {posts.length === 0 ? (
-              <div className="text-center py-12">
-                <FileText className="text-gray-400 mx-auto mb-4" size={48} />
-                <p className="text-gray-400 text-lg">No posts yet</p>
-                <p className="text-gray-500 text-sm">
-                  Create your first post to get started!
-                </p>
-              </div>
-            ) : (
-              posts.map((post) => (
-                <div
-                  key={post._id}
-                  className="bg-gray-800 rounded-lg p-6 border border-gray-700"
-                >
-                  <div className="flex items-start space-x-4">
-                    <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center">
-                      {user?.profilePicture ? (
-                        <img
-                          src={user.profilePicture}
-                          alt=""
-                          className="w-10 h-10 rounded-full object-cover"
-                        />
-                      ) : (
-                        <span className="text-white font-medium text-sm">
-                          {user?.firstName?.charAt(0) || "U"}
-                        </span>
-                      )}
+              <div>
+                {posts.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 border-2 border-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Camera size={24} className="text-gray-400" />
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <span className="text-white font-medium">
-                          {user?.firstName} {user?.lastName}
-                        </span>
-                        <span className="text-gray-400">@{user?.username}</span>
-                        <span className="text-gray-500 text-sm">
-                          {new Date(post.createdAt).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <p className="text-gray-300 mb-4">{post.content}</p>
-                      {post.image && (
-                        <img
-                          src={post.image}
-                          alt=""
-                          className="rounded-lg max-w-full h-auto"
-                        />
-                      )}
-                      <div className="flex items-center space-x-6 text-gray-400 text-sm">
-                        <div className="flex items-center space-x-1">
-                          <Heart size={16} />
-                          <span>{post.likes?.length || 0} likes</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <MessageSquare size={16} />
-                          <span>{post.comments?.length || 0} comments</span>
-                        </div>
-                      </div>
-                    </div>
+                    <h3 className="text-white text-xl font-semibold mb-2">
+                      Share Photos
+                    </h3>
+                    <p className="text-gray-400 mb-4">
+                      When you share photos, they will appear on your profile.
+                    </p>
+                    <button
+                      onClick={() => navigate("/create-post")}
+                      className="bg-blue-500 text-white px-6 py-2 rounded font-medium hover:bg-blue-600 transition-colors"
+                    >
+                      Share your first photo
+                    </button>
                   </div>
-                </div>
-              ))
+                ) : (
+                  <div className="grid grid-cols-3 gap-1">
+                    {posts.map((post) => (
+                      <div
+                        key={post._id}
+                        className="aspect-square bg-gray-800 relative group cursor-pointer"
+                      >
+                        {post.image ? (
+                          <img
+                            src={post.image}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <FileText size={32} className="text-gray-400" />
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center">
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center space-x-4 text-white">
+                            <div className="flex items-center space-x-1">
+                              <Heart size={20} />
+                              <span>{post.likes?.length || 0}</span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <MessageSquare size={20} />
+                              <span>{post.comments?.length || 0}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
-          </div>
-        )}
-
-        {/* Followers Tab */}
-        {activeTab === "followers" && (
-          <div className="text-center py-12">
-            <Users className="text-gray-400 mx-auto mb-4" size={48} />
-            <p className="text-gray-400 text-lg">Followers list coming soon</p>
-          </div>
-        )}
-
-        {/* Following Tab */}
-        {activeTab === "following" && (
-          <div className="text-center py-12">
-            <Users className="text-gray-400 mx-auto mb-4" size={48} />
-            <p className="text-gray-400 text-lg">Following list coming soon</p>
-          </div>
-        )}
-
-        {/* Settings Tab */}
-        {activeTab === "settings" && (
-          <div className="settings-content">
-            <SettingsTab
-              settings={settings}
-              setSettings={setSettings}
-              onLogout={handleLogout}
-              onDeleteAccount={() => setShowDeleteConfirm(true)}
-            />
           </div>
         )}
       </div>
@@ -547,7 +441,7 @@ function Profile() {
                 onClick={() =>
                   document.querySelector('input[type="file"]').click()
                 }
-                className="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+                className="flex-1 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
               >
                 Choose File
               </button>
@@ -939,215 +833,6 @@ function ProfileView({ user }) {
               <span className="text-gray-500">No interests added</span>
             )}
           </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Settings Tab Component
-function SettingsTab({ settings, setSettings, onLogout, onDeleteAccount }) {
-  return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      <h2 className="text-white text-2xl font-semibold">Settings</h2>
-
-      {/* Notifications */}
-      <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-        <h3 className="text-white text-lg font-medium mb-4 flex items-center space-x-2">
-          <Bell size={20} />
-          <span>Notifications</span>
-        </h3>
-
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <span className="text-white font-medium">
-                Email Notifications
-              </span>
-              <p className="text-gray-400 text-sm">
-                Receive notifications via email
-              </p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.emailNotifications}
-                onChange={(e) =>
-                  setSettings((prev) => ({
-                    ...prev,
-                    emailNotifications: e.target.checked,
-                  }))
-                }
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
-            </label>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div>
-              <span className="text-white font-medium">Push Notifications</span>
-              <p className="text-gray-400 text-sm">
-                Receive push notifications
-              </p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.pushNotifications}
-                onChange={(e) =>
-                  setSettings((prev) => ({
-                    ...prev,
-                    pushNotifications: e.target.checked,
-                  }))
-                }
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
-            </label>
-          </div>
-        </div>
-      </div>
-
-      {/* Privacy */}
-      <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-        <h3 className="text-white text-lg font-medium mb-4 flex items-center space-x-2">
-          <Shield size={20} />
-          <span>Privacy</span>
-        </h3>
-
-        <div className="space-y-4">
-          <div>
-            <label className="block text-white font-medium mb-2">
-              Profile Visibility
-            </label>
-            <select
-              value={settings.profileVisibility}
-              onChange={(e) =>
-                setSettings((prev) => ({
-                  ...prev,
-                  profileVisibility: e.target.value,
-                }))
-              }
-              className="w-full bg-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-            >
-              <option value="public">Public</option>
-              <option value="friends">Friends Only</option>
-              <option value="private">Private</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-white font-medium mb-2">
-              Allow Messages From
-            </label>
-            <select
-              value={settings.allowMessages}
-              onChange={(e) =>
-                setSettings((prev) => ({
-                  ...prev,
-                  allowMessages: e.target.value,
-                }))
-              }
-              className="w-full bg-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-            >
-              <option value="everyone">Everyone</option>
-              <option value="friends">Friends Only</option>
-              <option value="none">No One</option>
-            </select>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div>
-              <span className="text-white font-medium">Show Online Status</span>
-              <p className="text-gray-400 text-sm">
-                Let others see when you're online
-              </p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.showOnlineStatus}
-                onChange={(e) =>
-                  setSettings((prev) => ({
-                    ...prev,
-                    showOnlineStatus: e.target.checked,
-                  }))
-                }
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
-            </label>
-          </div>
-        </div>
-      </div>
-
-      {/* Appearance */}
-      <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-        <h3 className="text-white text-lg font-medium mb-4 flex items-center space-x-2">
-          <Palette size={20} />
-          <span>Appearance</span>
-        </h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-white font-medium mb-2">Theme</label>
-            <select
-              value={settings.theme}
-              onChange={(e) =>
-                setSettings((prev) => ({ ...prev, theme: e.target.value }))
-              }
-              className="w-full bg-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-            >
-              <option value="dark">Dark</option>
-              <option value="light">Light</option>
-              <option value="auto">Auto</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-white font-medium mb-2">
-              Language
-            </label>
-            <select
-              value={settings.language}
-              onChange={(e) =>
-                setSettings((prev) => ({ ...prev, language: e.target.value }))
-              }
-              className="w-full bg-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-            >
-              <option value="en">English</option>
-              <option value="es">Spanish</option>
-              <option value="fr">French</option>
-              <option value="de">German</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Account Actions */}
-      <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-        <h3 className="text-white text-lg font-medium mb-4 flex items-center space-x-2">
-          <Lock size={20} />
-          <span>Account Actions</span>
-        </h3>
-
-        <div className="space-y-4">
-          <button
-            onClick={onLogout}
-            className="w-full bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center space-x-2"
-          >
-            <LogOut size={16} />
-            <span>Logout</span>
-          </button>
-
-          <button
-            onClick={onDeleteAccount}
-            className="w-full bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center space-x-2"
-          >
-            <Trash2 size={16} />
-            <span>Delete Account</span>
-          </button>
         </div>
       </div>
     </div>

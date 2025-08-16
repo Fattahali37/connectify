@@ -60,7 +60,7 @@ function UserProfile() {
       setIsLoading(true);
 
       // First get the user data
-      const userResponse = await api.getUserByUsername(username);
+      const userResponse = await api.getUserProfile(username);
       const userData = userResponse.data.user;
       setUser(userData);
 

@@ -20,11 +20,11 @@ function Layout({ children, onLogout }) {
   };
 
   return (
-    <div className="flex h-screen bg-gray-900">
+    <div className="flex h-screen bg-black">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black bg-opacity-75 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -44,10 +44,10 @@ function Layout({ children, onLogout }) {
       {/* Main content */}
       <main className="flex-1 flex flex-col overflow-hidden">
         {/* Mobile header */}
-        <div className="lg:hidden bg-gray-800 border-b border-gray-700 px-4 py-3 flex items-center justify-between">
+        <div className="lg:hidden bg-black border-b border-gray-800 px-4 py-3 flex items-center justify-between">
           <button
             onClick={toggleSidebar}
-            className="text-gray-300 hover:text-white p-2 rounded-md hover:bg-gray-700 transition-colors"
+            className="text-gray-300 hover:text-white p-2 rounded-md hover:bg-gray-800 transition-colors"
             aria-label="Toggle sidebar"
           >
             <Menu size={24} />
@@ -56,7 +56,9 @@ function Layout({ children, onLogout }) {
           <div className="w-10"></div> {/* Spacer for centering */}
         </div>
 
-        <div className="main-content flex-1 overflow-hidden">{children}</div>
+        <div className="main-content-instagram flex-1 overflow-hidden">
+          {children}
+        </div>
       </main>
 
       {/* Mobile Navigation */}

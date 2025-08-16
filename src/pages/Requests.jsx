@@ -13,12 +13,15 @@ import {
   Search,
   Filter,
   RefreshCw,
+  ArrowLeft,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
 function Requests() {
   const { user } = useAuth();
   const { success, error, info } = useNotifications();
+  const navigate = useNavigate();
   const [requests, setRequests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("follow");
@@ -141,165 +144,121 @@ function Requests() {
     return matchesSearch && matchesFilter;
   });
 
-  const getRequestIcon = (type) => {
-    switch (type) {
-      case "follow":
-        return <UserPlus className="w-5 h-5 text-blue-400" />;
-      case "friend":
-        return <Users className="w-5 h-5 text-green-400" />;
-      case "group":
-        return <Users className="w-5 h-5 text-purple-400" />;
-      default:
-        return <UserPlus className="w-5 h-5 text-gray-400" />;
-    }
-  };
-
-  const getRequestStatusColor = (status) => {
-    switch (status) {
-      case "pending":
-        return "text-yellow-400";
-      case "accepted":
-        return "text-green-400";
-      case "rejected":
-        return "text-red-400";
-      default:
-        return "text-gray-400";
-    }
-  };
-
-  const getRequestStatusIcon = (status) => {
-    switch (status) {
-      case "pending":
-        return <Clock className="w-4 h-4" />;
-      case "accepted":
-        return <CheckCircle className="w-4 h-4" />;
-      case "rejected":
-        return <XCircle className="w-4 h-4" />;
-      default:
-        return <Clock className="w-4 h-4" />;
-    }
-  };
-
   if (isLoading) {
     return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading requests...</p>
+      <div className="flex-1 bg-black page-content">
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-gray-400">Loading requests...</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 bg-gray-900 page-content">
-      {/* Header */}
-      <div className="bg-gray-800 border-b border-gray-700 px-6 py-4 sticky top-0 z-10">
-        <div className="flex items-center justify-between">
-          <h1 className="text-white text-xl font-semibold">Requests</h1>
+    <div className="flex-1 bg-black page-content">
+      {/* Header - Instagram Style */}
+      <div className="bg-black border-b border-gray-800 px-4 py-3 sticky top-0 z-10">
+        <div className="flex items-center justify-between max-w-2xl mx-auto">
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="text-gray-400 hover:text-white p-1 rounded transition-colors"
+            >
+              <ArrowLeft size={20} />
+            </button>
+            <h1 className="text-white text-lg font-semibold">Requests</h1>
+          </div>
           <button
             onClick={refreshRequests}
             disabled={refreshing}
-            className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50"
+            className="text-blue-500 hover:text-blue-400 text-sm font-medium transition-colors disabled:opacity-50"
             title="Refresh requests"
           >
-            <RefreshCw size={20} className={refreshing ? "animate-spin" : ""} />
+            {refreshing ? "Refreshing..." : "Refresh"}
           </button>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="bg-gray-800 border-b border-gray-700 px-6">
-        <div className="flex space-x-1">
-          {[
-            {
-              id: "follow",
-              label: "Follow Requests",
-              count: requests.filter((r) => r.type === "follow").length,
-            },
-            {
-              id: "friend",
-              label: "Friend Requests",
-              count: requests.filter((r) => r.type === "friend").length,
-            },
-            {
-              id: "group",
-              label: "Group Invites",
-              count: requests.filter((r) => r.type === "group").length,
-            },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
-                activeTab === tab.id
-                  ? "bg-gray-900 text-white border-b-2 border-purple-500"
-                  : "text-gray-400 hover:text-white hover:bg-gray-700"
-              }`}
-            >
-              {tab.label}
-              {tab.count > 0 && (
-                <span className="ml-2 bg-purple-600 text-white text-xs rounded-full px-2 py-1">
-                  {tab.count}
-                </span>
-              )}
-            </button>
-          ))}
+      {/* Tabs - Instagram Style */}
+      <div className="border-b border-gray-800">
+        <div className="flex justify-center">
+          <div className="flex space-x-8">
+            {[
+              {
+                id: "follow",
+                label: "Follow Requests",
+                count: requests.filter((r) => r.type === "follow").length,
+              },
+              {
+                id: "friend",
+                label: "Friend Requests",
+                count: requests.filter((r) => r.type === "friend").length,
+              },
+              {
+                id: "group",
+                label: "Group Invites",
+                count: requests.filter((r) => r.type === "group").length,
+              },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`py-3 border-t-2 transition-colors ${
+                  activeTab === tab.id
+                    ? "border-white text-white"
+                    : "border-transparent text-gray-400 hover:text-white"
+                }`}
+              >
+                <span className="text-sm font-medium">{tab.label}</span>
+                {tab.count > 0 && (
+                  <span className="ml-2 bg-blue-500 text-white text-xs rounded-full px-2 py-1">
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Search and Filter */}
-      <div className="p-4 border-b border-gray-700">
-        <div className="flex space-x-4">
-          <div className="flex-1 relative">
-            <Search
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-              size={20}
-            />
-            <input
-              type="text"
-              placeholder="Search requests..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-gray-700 text-white placeholder-gray-400 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-            />
-          </div>
-
-          <div className="relative">
-            <Filter
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-              size={20}
-            />
-            <select
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-              className="bg-gray-700 text-white rounded-lg pl-10 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none"
-            >
-              <option value="all">All Status</option>
-              <option value="pending">Pending</option>
-              <option value="accepted">Accepted</option>
-              <option value="rejected">Rejected</option>
-            </select>
-          </div>
+      {/* Search Bar */}
+      <div className="p-4 max-w-2xl mx-auto">
+        <div className="relative">
+          <Search
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+            size={20}
+          />
+          <input
+            type="text"
+            placeholder="Search requests..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full bg-gray-900 text-white placeholder-gray-400 rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent border border-gray-800"
+          />
         </div>
       </div>
 
       {/* Requests List */}
-      <div className="requests-container p-4">
+      <div className="px-4 max-w-2xl mx-auto">
         {filteredRequests.length === 0 ? (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-              <UserPlus className="text-gray-400 mx-auto mb-4" size={48} />
-              <p className="text-gray-400 text-lg">No requests found</p>
-              <p className="text-gray-500 text-sm">
-                {searchTerm || filter !== "all"
-                  ? "Try adjusting your search or filter"
-                  : "You're all caught up!"}
-              </p>
+          <div className="text-center py-16">
+            <div className="w-20 h-20 border-2 border-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+              <UserPlus size={32} className="text-gray-400" />
             </div>
+            <h3 className="text-white text-xl font-semibold mb-2">
+              No requests
+            </h3>
+            <p className="text-gray-400">
+              {searchTerm || filter !== "all"
+                ? "Try adjusting your search"
+                : "You're all caught up!"}
+            </p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {filteredRequests.map((request) => (
               <RequestCard
                 key={request._id}
@@ -307,9 +266,6 @@ function Requests() {
                 onFollowRequest={handleFollowRequest}
                 onFriendRequest={handleFriendRequest}
                 onGroupInvite={handleGroupInvite}
-                getRequestIcon={getRequestIcon}
-                getRequestStatusColor={getRequestStatusColor}
-                getRequestStatusIcon={getRequestStatusIcon}
               />
             ))}
           </div>
@@ -319,15 +275,12 @@ function Requests() {
   );
 }
 
-// Request Card Component
+// Request Card Component - Instagram Style
 function RequestCard({
   request,
   onFollowRequest,
   onFriendRequest,
   onGroupInvite,
-  getRequestIcon,
-  getRequestStatusColor,
-  getRequestStatusIcon,
 }) {
   const { user } = useAuth();
   const { info } = useNotifications();
@@ -368,87 +321,86 @@ function RequestCard({
       <div className="flex space-x-2 mt-3">
         <button
           onClick={() => handleAction("accept")}
-          className="bg-green-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-green-700 transition-colors flex items-center space-x-1"
+          className="bg-blue-500 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors"
         >
-          <CheckCircle size={16} />
-          <span>Accept</span>
+          Accept
         </button>
         <button
           onClick={() => handleAction("reject")}
-          className="bg-red-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-700 transition-colors flex items-center space-x-1"
+          className="bg-gray-800 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors border border-gray-700"
         >
-          <XCircle size={16} />
-          <span>Reject</span>
+          Decline
         </button>
       </div>
     );
   };
 
   return (
-    <div className="bg-gray-800 rounded-lg p-4 border border-gray-700 hover:border-purple-500 transition-colors">
+    <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
       <div className="flex items-start space-x-4">
-        {/* Request Icon */}
-        <div className="flex-shrink-0">{getRequestIcon(request.type)}</div>
+        {/* Profile Picture */}
+        <div className="flex-shrink-0">
+          <div className="w-14 h-14 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden">
+            {request.sender?.profilePicture ? (
+              <img
+                src={request.sender.profilePicture}
+                alt=""
+                className="w-14 h-14 rounded-full object-cover"
+              />
+            ) : (
+              <span className="text-white font-medium text-lg">
+                {request.sender?.firstName?.charAt(0) || "U"}
+              </span>
+            )}
+          </div>
+        </div>
 
         {/* Request Info */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center">
-                {request.sender?.profilePicture ? (
-                  <img
-                    src={request.sender.profilePicture}
-                    alt=""
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
-                ) : (
-                  <span className="text-white font-medium text-sm">
-                    {request.sender?.firstName?.charAt(0) || "U"}
-                  </span>
-                )}
-              </div>
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <h3 className="text-white font-semibold text-base">
+                {request.sender?.firstName} {request.sender?.lastName}
+              </h3>
+              <p className="text-gray-400 text-sm mb-1">
+                @{request.sender?.username}
+              </p>
 
-              <div>
-                <h3 className="text-white font-medium">
-                  {request.sender?.firstName} {request.sender?.lastName}
-                </h3>
-                <p className="text-gray-400 text-sm">
-                  @{request.sender?.username}
+              {/* Request Message */}
+              <p className="text-gray-300 text-sm">
+                <span className="font-medium">{request.sender?.firstName}</span>{" "}
+                {getRequestMessage()}
+              </p>
+
+              {/* Additional Info */}
+              {request.message && (
+                <p className="text-gray-400 text-sm mt-2 italic">
+                  "{request.message}"
                 </p>
-              </div>
+              )}
+
+              {/* Action Buttons */}
+              {getActionButtons()}
             </div>
 
-            <div className="flex items-center space-x-2">
-              <div
-                className={`flex items-center space-x-1 ${getRequestStatusColor(
-                  request.status
-                )}`}
-              >
-                {getRequestStatusIcon(request.status)}
-                <span className="text-sm capitalize">{request.status}</span>
-              </div>
-
-              <span className="text-gray-500 text-sm">
+            {/* Status and Date */}
+            <div className="text-right text-xs text-gray-500">
+              <div className="mb-1">
                 {new Date(request.createdAt).toLocaleDateString()}
-              </span>
+              </div>
+              <div
+                className={`capitalize ${
+                  request.status === "pending"
+                    ? "text-yellow-400"
+                    : request.status === "accepted"
+                    ? "text-green-400"
+                    : "text-red-400"
+                }`}
+              >
+                {request.status}
+              </div>
             </div>
           </div>
-
-          {/* Request Message */}
-          <p className="text-gray-300 mt-2">
-            <span className="font-medium">{request.sender?.firstName}</span>{" "}
-            {getRequestMessage()}
-          </p>
-
-          {/* Additional Info */}
-          {request.message && (
-            <p className="text-gray-400 text-sm mt-2 italic">
-              "{request.message}"
-            </p>
-          )}
-
-          {/* Action Buttons */}
-          {getActionButtons()}
         </div>
       </div>
     </div>

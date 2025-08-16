@@ -175,12 +175,12 @@ class ApiService {
 
   async unlikePost(postId) {
     return this.request(`/posts/${postId}/like`, {
-      method: "DELETE",
+      method: "POST",
     });
   }
 
   async addComment(postId, commentData) {
-    return this.request(`/posts/${postId}/comments`, {
+    return this.request(`/posts/${postId}/comment`, {
       method: "POST",
       body: JSON.stringify(commentData),
     });

@@ -22,7 +22,7 @@ function Signup() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   const { signup } = useAuth();
@@ -59,7 +59,7 @@ function Signup() {
       return;
     }
 
-    setIsLoading(true);
+    setIsSubmitting(true);
 
     try {
       const result = await signup(formData);
@@ -71,17 +71,17 @@ function Signup() {
     } catch (error) {
       setError("An unexpected error occurred");
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-black flex items-center justify-center px-4 py-8">
       <div className="max-w-md w-full space-y-8">
         {/* Logo and Title */}
         <div className="text-center">
-          <div className="mx-auto h-20 w-20 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center mb-6 shadow-lg">
-            <Sparkles size={40} className="text-white" />
+          <div className="mx-auto h-20 w-20 gradient-instagram rounded-full flex items-center justify-center mb-6 shadow-lg">
+            <span className="text-white font-bold text-2xl">C</span>
           </div>
           <h1 className="text-3xl lg:text-4xl font-bold text-white mb-2">
             Join Connectify
@@ -94,7 +94,7 @@ function Signup() {
         {/* Signup Form */}
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="bg-red-900 bg-opacity-20 border border-red-500 text-red-400 px-4 py-3 rounded-lg text-sm flex items-center space-x-2">
+            <div className="notification-instagram border-red-800 bg-red-900 bg-opacity-20 text-red-400 flex items-center space-x-2">
               <span>⚠️</span>
               <span>{error}</span>
             </div>
@@ -110,22 +110,19 @@ function Signup() {
                 >
                   First Name
                 </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <User size={20} className="text-gray-400" />
-                  </div>
-                  <input
-                    id="firstName"
-                    name="firstName"
-                    type="text"
-                    autoComplete="given-name"
-                    required
-                    value={formData.firstName}
-                    onChange={handleChange}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-600 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                    placeholder="First name"
-                  />
-                </div>
+                <input
+                  id="firstName"
+                  name="firstName"
+                  type="text"
+                  autoComplete="given-name"
+                  required
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  onFocus={() => setError("")}
+                  className="input-instagram"
+                  placeholder="First name"
+                  aria-label="First name"
+                />
               </div>
 
               <div>
@@ -135,22 +132,19 @@ function Signup() {
                 >
                   Last Name
                 </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <User size={20} className="text-gray-400" />
-                  </div>
-                  <input
-                    id="lastName"
-                    name="lastName"
-                    type="text"
-                    autoComplete="family-name"
-                    required
-                    value={formData.lastName}
-                    onChange={handleChange}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-600 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                    placeholder="Last name"
-                  />
-                </div>
+                <input
+                  id="lastName"
+                  name="lastName"
+                  type="text"
+                  autoComplete="family-name"
+                  required
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  onFocus={() => setError("")}
+                  className="input-instagram"
+                  placeholder="Last name"
+                  aria-label="Last name"
+                />
               </div>
             </div>
 
@@ -162,23 +156,25 @@ function Signup() {
               >
                 Username
               </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <UserCheck size={20} className="text-gray-400" />
-                </div>
-                <input
-                  id="username"
-                  name="username"
-                  type="text"
-                  autoComplete="username"
-                  required
-                  value={formData.username}
-                  onChange={handleChange}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-600 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                  placeholder="Choose a username"
-                  minLength={3}
-                />
-              </div>
+              <input
+                id="username"
+                name="username"
+                type="text"
+                autoComplete="username"
+                required
+                value={formData.username}
+                onChange={handleChange}
+                onFocus={() => setError("")}
+                className="input-instagram"
+                placeholder="Choose a username"
+                aria-label="Username"
+                minLength={3}
+              />
+              {formData.username.length > 0 && formData.username.length < 3 && (
+                <p className="text-yellow-400 text-xs mt-1">
+                  Username must be at least 3 characters long
+                </p>
+              )}
             </div>
 
             {/* Email Field */}
@@ -189,22 +185,19 @@ function Signup() {
               >
                 Email Address
               </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail size={20} className="text-gray-400" />
-                </div>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-600 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                  placeholder="Enter your email"
-                />
-              </div>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={formData.email}
+                onChange={handleChange}
+                onFocus={() => setError("")}
+                className="input-instagram"
+                placeholder="Enter your email"
+                aria-label="Email address"
+              />
             </div>
 
             {/* Password Field */}
@@ -216,9 +209,6 @@ function Signup() {
                 Password
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock size={20} className="text-gray-400" />
-                </div>
                 <input
                   id="password"
                   name="password"
@@ -227,22 +217,26 @@ function Signup() {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="block w-full pl-10 pr-12 py-3 border border-gray-600 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                  onFocus={() => setError("")}
+                  className="input-instagram pr-10"
                   placeholder="Create a password"
+                  aria-label="Password"
                   minLength={6}
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-300 transition-colors"
                   onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-400 transition-colors"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
-              <p className="text-gray-400 text-xs mt-1">
-                Must be at least 6 characters long
-              </p>
+              {formData.password.length > 0 && formData.password.length < 6 && (
+                <p className="text-yellow-400 text-xs mt-1">
+                  Password must be at least 6 characters long
+                </p>
+              )}
             </div>
 
             {/* Confirm Password Field */}
@@ -253,48 +247,36 @@ function Signup() {
               >
                 Confirm Password
               </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock size={20} className="text-gray-400" />
-                </div>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  autoComplete="new-password"
-                  required
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className="block w-full pl-10 pr-12 py-3 border border-gray-600 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                  placeholder="Confirm your password"
-                  minLength={6}
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-300 transition-colors"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  aria-label={
-                    showConfirmPassword ? "Hide password" : "Show password"
-                  }
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff size={20} />
-                  ) : (
-                    <Eye size={20} />
-                  )}
-                </button>
-              </div>
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                autoComplete="new-password"
+                required
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                onFocus={() => setError("")}
+                className="input-instagram"
+                placeholder="Confirm your password"
+                aria-label="Confirm password"
+              />
+              {formData.confirmPassword.length > 0 &&
+                formData.password !== formData.confirmPassword && (
+                  <p className="text-red-400 text-xs mt-1">
+                    Passwords do not match
+                  </p>
+                )}
             </div>
           </div>
 
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={isLoading}
-            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 transform"
+            disabled={isSubmitting}
+            className="btn-instagram w-full py-3 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? (
-              <div className="flex items-center space-x-2">
+            {isSubmitting ? (
+              <div className="flex items-center justify-center space-x-2">
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 <span>Creating account...</span>
               </div>
@@ -302,20 +284,20 @@ function Signup() {
               "Create Account"
             )}
           </button>
-        </form>
 
-        {/* Sign In Link */}
-        <div className="text-center">
-          <p className="text-gray-400">
-            Already have an account?{" "}
-            <Link
-              to="/login"
-              className="text-purple-400 hover:text-purple-300 font-medium transition-colors hover:underline"
-            >
-              Sign in here
-            </Link>
-          </p>
-        </div>
+          {/* Sign In Link */}
+          <div className="text-center">
+            <p className="text-gray-400">
+              Already have an account?{" "}
+              <Link
+                to="/login"
+                className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
+              >
+                Sign in here
+              </Link>
+            </p>
+          </div>
+        </form>
       </div>
     </div>
   );

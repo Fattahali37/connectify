@@ -2,28 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom scrollbar styles */
+/* Instagram Dark Mode Color Palette */
+:root {
+  --ig-primary: #0095f6;
+  --ig-primary-hover: #0081d6;
+  --ig-secondary: #00376b;
+  --ig-text-primary: #ffffff;
+  --ig-text-secondary: #a8a8a8;
+  --ig-text-tertiary: #8e8e8e;
+  --ig-border: #262626;
+  --ig-border-light: #363636;
+  --ig-background: #000000;
+  --ig-background-secondary: #121212;
+  --ig-background-tertiary: #1a1a1a;
+  --ig-card: #1a1a1a;
+  --ig-error: #ed4956;
+  --ig-success: #2ecc71;
+  --ig-gradient: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  --ig-gradient-dark: linear-gradient(45deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%);
+}
+
+/* Instagram Dark Mode Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #374151;
+  background: #000000;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #6b7280;
+  background: #262626;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: #363636;
 }
 
-/* Ensure proper scrolling */
+/* Base styles */
 html, body {
   height: 100%;
   overflow: hidden;
+  background-color: var(--ig-background);
+  color: var(--ig-text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 #root {
@@ -32,109 +55,158 @@ html, body {
   flex-direction: column;
 }
 
-/* Main layout scrolling */
-.main-content {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
+/* Instagram Dark Mode Buttons */
+.btn-instagram {
+  @apply bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold py-2 px-4 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-black;
 }
 
-/* Page content scrolling */
-.page-content {
-  min-height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
+.btn-instagram-outline {
+  @apply border border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-black;
 }
 
-/* Chat room scrolling */
-.chat-messages {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
+.btn-instagram-secondary {
+  @apply bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-black;
 }
 
-/* Sidebar scrolling */
-.sidebar-content {
-  overflow-y: auto;
-  overflow-x: hidden;
+/* Instagram Dark Mode Inputs */
+.input-instagram {
+  @apply w-full px-3 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-800 text-white placeholder-gray-400;
 }
 
-/* Profile and settings scrolling */
-.profile-content,
-.settings-content {
-  overflow-y: auto;
-  overflow-x: hidden;
-  max-height: calc(100vh - 200px);
+/* Instagram Dark Mode Cards */
+.card-instagram {
+  @apply bg-gray-800 border border-gray-700 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-200;
 }
 
-/* Home page posts scrolling */
-.posts-container {
-  overflow-y: auto;
-  overflow-x: hidden;
+/* Instagram Dark Mode Navigation */
+.nav-instagram {
+  @apply bg-black border-b border-gray-800 sticky top-0 z-50;
 }
 
-/* Search results scrolling */
-.search-results {
-  overflow-y: auto;
-  overflow-x: hidden;
-  max-height: calc(100vh - 200px);
+/* Instagram Dark Mode Sidebar */
+.sidebar-instagram {
+  @apply bg-black border-r border-gray-800;
 }
 
-/* Requests page scrolling */
-.requests-container {
-  overflow-y: auto;
-  overflow-x: hidden;
-  max-height: calc(100vh - 200px);
+/* Instagram Dark Mode Main Content */
+.main-content-instagram {
+  @apply bg-black;
 }
 
-/* Custom line-clamp utilities */
-.line-clamp-1 {
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 1;
+/* Instagram Dark Mode Posts */
+.post-instagram {
+  @apply bg-gray-800 border border-gray-700 rounded-lg mb-6 overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-200;
 }
 
-.line-clamp-2 {
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+/* Instagram Dark Mode Stories */
+.stories-container {
+  @apply bg-gray-800 border border-gray-700 rounded-lg p-4 mb-6;
 }
 
-.line-clamp-3 {
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
+.story-item {
+  @apply flex flex-col items-center space-y-2 cursor-pointer;
 }
 
-/* Enhanced transitions */
-* {
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, transform, opacity, box-shadow;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 200ms;
+.story-avatar {
+  @apply w-16 h-16 rounded-full p-0.5 bg-gradient-to-r from-yellow-400 via-red-500 to-purple-600;
 }
 
-/* Focus styles */
-.focus-ring {
-  @apply focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-900;
+.story-avatar-inner {
+  @apply w-full h-full rounded-full border-2 border-gray-800;
 }
 
-/* Button states */
-.btn-primary {
-  @apply bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 focus-ring hover:scale-105 transform;
+/* Instagram Dark Mode Profile */
+.profile-header {
+  @apply bg-gray-800 border border-gray-700 rounded-lg p-6 mb-6;
 }
 
-.btn-secondary {
-  @apply bg-gray-700 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 focus-ring hover:scale-105 transform;
+.profile-stats {
+  @apply flex space-x-8 text-center;
 }
 
-.btn-outline {
-  @apply border border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 focus-ring hover:scale-105 transform;
+.profile-stat {
+  @apply flex flex-col;
 }
 
-/* Enhanced animations */
+.profile-stat-number {
+  @apply text-xl font-semibold text-white;
+}
+
+.profile-stat-label {
+  @apply text-sm text-gray-400;
+}
+
+/* Instagram Dark Mode Search */
+.search-instagram {
+  @apply bg-gray-800 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-white placeholder-gray-400;
+}
+
+/* Instagram Dark Mode Modals */
+.modal-instagram {
+  @apply fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50;
+}
+
+.modal-content-instagram {
+  @apply bg-gray-800 border border-gray-700 rounded-lg shadow-2xl max-w-md w-full mx-4;
+}
+
+/* Instagram Dark Mode Notifications */
+.notification-instagram {
+  @apply bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-lg;
+}
+
+/* Instagram Dark Mode Loading */
+.loading-instagram {
+  @apply flex items-center justify-center py-12;
+}
+
+.loading-spinner-instagram {
+  @apply animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500;
+}
+
+/* Instagram Dark Mode Empty States */
+.empty-state-instagram {
+  @apply text-center py-12;
+}
+
+.empty-state-icon {
+  @apply w-16 h-16 text-gray-500 mx-auto mb-4;
+}
+
+.empty-state-title {
+  @apply text-lg font-semibold text-white mb-2;
+}
+
+.empty-state-description {
+  @apply text-gray-400 mb-6;
+}
+
+/* Instagram Dark Mode Responsive Design */
+@media (max-width: 640px) {
+  .mobile-hidden {
+    display: none;
+  }
+  
+  .mobile-full {
+    width: 100%;
+  }
+  
+  .mobile-p-2 {
+    padding: 0.5rem;
+  }
+  
+  .mobile-text-sm {
+    font-size: 0.875rem;
+  }
+}
+
+@media (min-width: 641px) {
+  .desktop-hidden {
+    display: none;
+  }
+}
+
+/* Instagram Dark Mode Animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -227,62 +299,87 @@ html, body {
 }
 
 .hover-glow:hover {
-  box-shadow: 0 0 20px rgba(147, 51, 234, 0.3);
+  box-shadow: 0 0 20px rgba(0, 149, 246, 0.3);
 }
 
-/* Responsive utilities */
-@media (max-width: 640px) {
-  .mobile-hidden {
-    display: none;
-  }
-  
-  .mobile-full {
-    width: 100%;
-  }
-  
-  .mobile-p-2 {
-    padding: 0.5rem;
-  }
-  
-  .mobile-text-sm {
-    font-size: 0.875rem;
-  }
+/* Instagram Dark Mode Gradients */
+.gradient-instagram {
+  background: var(--ig-gradient);
 }
 
-@media (min-width: 641px) {
-  .desktop-hidden {
-    display: none;
-  }
+.gradient-instagram-dark {
+  background: var(--ig-gradient-dark);
 }
 
-/* Glass morphism effect */
-.glass {
-  background: rgba(17, 25, 40, 0.75);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.125);
-}
-
-/* Gradient text */
-.gradient-text {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+.gradient-text-instagram {
+  background: var(--ig-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Custom shadows */
-.shadow-purple {
-  box-shadow: 0 4px 14px 0 rgba(147, 51, 234, 0.39);
+/* Instagram Dark Mode Shadows */
+.shadow-instagram {
+  box-shadow: 0 4px 14px 0 rgba(0, 149, 246, 0.39);
 }
 
-.shadow-blue {
-  box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39);
+.shadow-instagram-light {
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.5);
 }
 
-/* Loading skeleton */
-.skeleton {
-  background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+/* Instagram Dark Mode Focus */
+.focus-instagram:focus {
+  outline: 2px solid var(--ig-primary);
+  outline-offset: 2px;
+}
+
+/* Instagram Dark Mode Transitions */
+.transition-instagram {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Instagram Dark Mode Borders */
+.border-instagram {
+  border-color: var(--ig-border);
+}
+
+.border-instagram-light {
+  border-color: var(--ig-border-light);
+}
+
+/* Instagram Dark Mode Text Colors */
+.text-instagram-primary {
+  color: var(--ig-text-primary);
+}
+
+.text-instagram-secondary {
+  color: var(--ig-text-secondary);
+}
+
+.text-instagram-tertiary {
+  color: var(--ig-text-tertiary);
+}
+
+/* Instagram Dark Mode Backgrounds */
+.bg-instagram {
+  background-color: var(--ig-background);
+}
+
+.bg-instagram-secondary {
+  background-color: var(--ig-background-secondary);
+}
+
+.bg-instagram-tertiary {
+  background-color: var(--ig-background-tertiary);
+}
+
+.bg-instagram-card {
+  background-color: var(--ig-card);
+}
+
+/* Instagram Dark Mode Loading Skeleton */
+.skeleton-instagram {
+  background: linear-gradient(90deg, #262626 25%, #363636 50%, #262626 75%);
   background-size: 200% 100%;
   animation: loading 1.5s infinite;
 }
@@ -296,32 +393,32 @@ html, body {
   }
 }
 
-/* Custom scrollbar for webkit browsers */
-.custom-scrollbar::-webkit-scrollbar {
+/* Instagram Dark Mode Custom Scrollbar */
+.custom-scrollbar-instagram::-webkit-scrollbar {
   width: 6px;
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #374151;
+.custom-scrollbar-instagram::-webkit-scrollbar-track {
+  background: #000000;
   border-radius: 3px;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #6b7280;
+.custom-scrollbar-instagram::-webkit-scrollbar-thumb {
+  background: #262626;
   border-radius: 3px;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+.custom-scrollbar-instagram::-webkit-scrollbar-thumb:hover {
+  background: #363636;
 }
 
-/* Focus visible for better accessibility */
+/* Instagram Dark Mode Focus Visible */
 .focus-visible:focus {
-  outline: 2px solid #8b5cf6;
+  outline: 2px solid var(--ig-primary);
   outline-offset: 2px;
 }
 
-/* Reduced motion for users who prefer it */
+/* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

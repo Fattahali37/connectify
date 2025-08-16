@@ -18,6 +18,7 @@ import ChatRoom from "./pages/ChatRoom";
 import UserProfile from "./pages/UserProfile";
 import CreatePost from "./pages/CreatePost";
 import Requests from "./pages/Requests";
+import Settings from "./pages/Settings";
 import api from "./services/api";
 
 // Protected Route component
@@ -129,6 +130,16 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <Requests />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Settings />
                   </Layout>
                 </ProtectedRoute>
               }
